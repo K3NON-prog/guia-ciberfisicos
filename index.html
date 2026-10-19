@@ -53,6 +53,11 @@ strong{font-weight:600}
 code{font-family:var(--f-mono);font-size:.84em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
 pre{font-family:var(--f-mono);font-size:13.5px;line-height:1.55;background:var(--code-bg);padding:14px 16px;border-radius:6px;overflow-x:auto;margin:14px 0}
 pre code{background:none;padding:0}
+pre{position:relative;padding-top:38px}
+.copy{position:absolute;top:6px;right:6px;font-family:var(--f-mono);font-size:11px;padding:3px 8px;border:1px solid var(--line);border-radius:4px;background:var(--paper);color:var(--muted);cursor:pointer}
+.copy:hover,.copy:focus-visible{color:var(--accent);border-color:var(--accent);outline:none}
+kbd{font-family:var(--f-mono);font-size:.82em;border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;background:var(--paper)}
+
 .big{background:var(--accent-soft);padding:14px 18px;border-radius:6px;margin:16px 0;font-size:1.05rem}
 .big b{font-family:var(--f-display);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px}
 .mb{display:block;overflow-x:auto;margin:14px 0;padding:6px 0;text-align:center}
@@ -119,6 +124,7 @@ svg .arrowa{stroke:var(--accent);stroke-width:1.8;fill:none;marker-end:url(#aha)
   <p>C · ROS 2</p>
   <a href="#c1">C1 · Qué es ROS 2</a>
   <a href="#c2">C2 · Workspace y publicador/suscriptor</a>
+  <a href="#c2pub">C2b · Paso a paso: publicador básico</a>
   <a href="#c3">C3 · Depuración</a>
   <a href="#c4">C4 · Lazo de control distribuido</a>
 </nav>
@@ -3308,6 +3314,148 @@ ros2 run hello_world hello_subscriber     # terminal 2 (con su propio source)</c
   </div>
 </section>
 
+<section id="c2pub" class="topic">
+  <h3>C2b · Paso a paso: escribir el Basic Publisher Node</h3>
+  <p class="src">Introduction to ROS2, Clase 2 (código corregido y completo)</p>
+
+  <div class="big"><b>Qué vas a construir</b>Un nodo de Python llamado <code>hello_world_publisher</code> que, cada segundo, publica el texto "¡Hola, Mundo de ROS2!" en el tópico <code>/hello_topic</code>. Todos los comandos usan una sola ruta, <code>~/ros2_ws</code>, para evitar la mezcla de rutas de la presentación.</div>
+
+  <h4>Paso 1 · Preparar la terminal</h4>
+  <p>En cada terminal nueva, carga ROS 2 Humble:</p>
+  <pre><code>source /opt/ros/humble/setup.bash</code></pre>
+  <p>Para no repetirlo, puedes agregarlo al final de <code>~/.bashrc</code> con <code>echo "source /opt/ros/humble/setup.bash" &gt;&gt; ~/.bashrc</code>.</p>
+
+  <h4>Paso 2 · Crear el workspace (solo la primera vez)</h4>
+  <pre><code>mkdir -p ~/ros2_ws/src
+cd ~/ros2_ws
+colcon build</code></pre>
+  <p>Con <code>src</code> vacío, colcon responde "0 packages finished". Es correcto: solo crea las carpetas <code>build</code>, <code>install</code> y <code>log</code>.</p>
+
+  <h4>Paso 3 · Crear el paquete</h4>
+  <pre><code>cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_python hello_world --dependencies rclpy std_msgs</code></pre>
+  <p>Esto genera esta estructura. El archivo que vas a escribir es el que dice "← nuevo":</p>
+  <pre><code>~/ros2_ws/src/hello_world/
+├── package.xml          ← nombre y dependencias (rclpy, std_msgs)
+├── setup.py             ← aquí se registran los ejecutables
+├── setup.cfg
+├── resource/hello_world
+├── test/
+└── hello_world/         ← carpeta del código Python (mismo nombre, es normal)
+    ├── __init__.py
+    └── publisher.py     ← nuevo</code></pre>
+
+  <h4>Paso 4 · Crear el archivo del nodo</h4>
+  <pre><code>cd ~/ros2_ws/src/hello_world/hello_world
+touch publisher.py
+code publisher.py        # o: nano publisher.py</code></pre>
+
+  <h4>Paso 5 · Escribir el código</h4>
+  <p>Este es el código de la diapositiva con la indentación corregida (en el PDF se perdió) y comentarios en cada línea. Usa 4 espacios por nivel, sin tabuladores.</p>
+  <pre><code>import rclpy                         # librería de ROS 2 para Python
+from rclpy.node import Node          # clase base de todo nodo
+from std_msgs.msg import String      # tipo de mensaje: texto
+
+
+class HelloWorldPublisher(Node):     # tu nodo hereda de Node
+
+    def __init__(self):
+        super().__init__('hello_world_publisher')        # nombre del nodo
+        # publicador: tipo de mensaje, nombre del tópico, tamaño de la cola
+        self.publisher_ = self.create_publisher(String, 'hello_topic', 10)
+        timer_period = 1.0                                  # segundos
+        # cada timer_period segundos, ROS llama a timer_callback
+        self.timer = self.create_timer(timer_period, self.timer_callback)
+
+    def timer_callback(self):
+        msg = String()                           # crear un mensaje vacío
+        msg.data = '¡Hola, Mundo de ROS2!'       # llenar su campo data
+        self.publisher_.publish(msg)             # mandarlo al tópico
+        self.get_logger().info('Publicando: "%s"' % msg.data)
+
+
+def main(args=None):
+    rclpy.init(args=args)                  # arrancar la comunicación de ROS
+    hello_world_publisher = HelloWorldPublisher()
+    rclpy.spin(hello_world_publisher)      # bucle de eventos: dispara callbacks
+    hello_world_publisher.destroy_node()   # limpiar al salir
+    rclpy.shutdown()
+
+
+if __name__ == '__main__':
+    main()</code></pre>
+
+  <div class="table-wrap"><table>
+    <tr><th>Pieza</th><th>Para qué sirve</th></tr>
+    <tr><td><code>class HelloWorldPublisher(Node)</code></td><td>Tu nodo es una clase que hereda todo lo que sabe hacer un nodo de ROS 2.</td></tr>
+    <tr><td><code>super().__init__('hello_world_publisher')</code></td><td>Registra el nodo con ese nombre. Es el que verás en <code>ros2 node list</code>.</td></tr>
+    <tr><td><code>create_publisher(String, 'hello_topic', 10)</code></td><td>Crea el "transmisor": mensajes de texto, en el tópico <code>/hello_topic</code>, con una cola de 10 mensajes por si el suscriptor va lento.</td></tr>
+    <tr><td><code>create_timer(1.0, self.timer_callback)</code></td><td>Reemplaza al <code>while True</code>: ROS llama a la función cada segundo.</td></tr>
+    <tr><td><code>msg = String()</code> y <code>msg.data</code></td><td>Los mensajes son objetos con campos. <code>String</code> tiene un solo campo, <code>data</code>.</td></tr>
+    <tr><td><code>publish(msg)</code></td><td>Envía el mensaje a todos los suscriptores del tópico.</td></tr>
+    <tr><td><code>get_logger().info(...)</code></td><td>Imprime en la terminal con formato de ROS (y lo manda a <code>/rosout</code>).</td></tr>
+    <tr><td><code>rclpy.spin(...)</code></td><td>Mantiene vivo el nodo. Sin esta línea, el programa terminaría al instante y nunca publicaría.</td></tr>
+  </table></div>
+  <p>Una diferencia mínima con la diapositiva: uso <code>timer_period = 1.0</code> en lugar de <code>1</code>. Las dos funcionan; el <code>1.0</code> deja claro que el periodo es en segundos y puede tener decimales (por ejemplo <code>0.5</code> para publicar a 2 Hz).</p>
+
+  <h4>Paso 6 · Revisar <code>package.xml</code></h4>
+  <p>Como usaste <code>--dependencies rclpy std_msgs</code>, ya debe tener estas dos líneas. Solo comprueba que estén:</p>
+  <pre><code>&lt;depend&gt;rclpy&lt;/depend&gt;
+&lt;depend&gt;std_msgs&lt;/depend&gt;</code></pre>
+
+  <h4>Paso 7 · Registrar el ejecutable en <code>setup.py</code></h4>
+  <pre><code>code ~/ros2_ws/src/hello_world/setup.py</code></pre>
+  <p>No cambies nada más del archivo; solo busca <code>entry_points</code> y déjalo así:</p>
+  <pre><code>    entry_points={
+        'console_scripts': [
+            'hello_publisher = hello_world.publisher:main',
+        ],
+    },</code></pre>
+  <p>Se lee: el ejecutable <code>hello_publisher</code> corre la función <code>main</code> del módulo <code>hello_world/publisher.py</code>.</p>
+  <div class="errata"><div class="lab">Escríbelo a mano, no lo copies de la diapositiva</div><p>En la presentación esta línea termina con una comilla tipográfica <code>’</code>. Si la copias, <code>colcon build</code> falla con <code>SyntaxError: unterminated string literal</code>. Deben ser comillas rectas <code>'</code> al inicio y al final. La coma final después de <code>main'</code> también importa si agregas más ejecutables debajo.</p></div>
+
+  <h4>Paso 8 · Compilar</h4>
+  <pre><code>cd ~/ros2_ws
+colcon build --packages-select hello_world --symlink-install
+source install/setup.bash</code></pre>
+  <p><code>--packages-select</code> compila solo este paquete (más rápido). <code>--symlink-install</code> hace que, si después editas <code>publisher.py</code>, no tengas que recompilar. Si cambias <code>setup.py</code>, sí.</p>
+
+  <h4>Paso 9 · Ejecutar</h4>
+  <pre><code>ros2 run hello_world hello_publisher</code></pre>
+  <p>Deberías ver una línea por segundo, parecida a esta (el número entre corchetes es la hora en segundos y cambia):</p>
+  <pre><code>[INFO] [1729371234.512345678] [hello_world_publisher]: Publicando: "¡Hola, Mundo de ROS2!"</code></pre>
+  <p>Para detenerlo: <kbd>Ctrl</kbd>+<kbd>C</kbd>. En Humble a veces aparece un <code>KeyboardInterrupt</code> con varias líneas de error al detenerlo; es normal y no significa que algo esté mal.</p>
+
+  <h4>Paso 10 · Comprobar que de verdad publica (otra terminal)</h4>
+  <pre><code>source /opt/ros/humble/setup.bash
+source ~/ros2_ws/install/setup.bash
+ros2 node list                 # debe aparecer /hello_world_publisher
+ros2 topic list                # debe aparecer /hello_topic
+ros2 topic echo /hello_topic   # imprime cada mensaje
+ros2 topic hz /hello_topic     # frecuencia: debe dar cerca de 1 Hz</code></pre>
+  <p><code>topic echo</code> muestra cada mensaje así, separado por guiones:</p>
+  <pre><code>data: ¡Hola, Mundo de ROS2!
+---</code></pre>
+  <p>Si esto funciona, tu publicador está bien. El suscriptor de la clase es el espejo: <code>create_subscription(String, 'hello_topic', self.listener_callback, 10)</code>, se registra igual en <code>setup.py</code> (<code>'hello_subscriber = hello_world.subscriber:main',</code>) y se corre en otra terminal.</p>
+
+  <h4>Si algo falla</h4>
+  <div class="table-wrap"><table>
+    <tr><th>Mensaje</th><th>Causa probable</th><th>Qué hacer</th></tr>
+    <tr><td><code>Package 'hello_world' not found</code></td><td>Falta <code>source</code> en esa terminal</td><td><code>source ~/ros2_ws/install/setup.bash</code></td></tr>
+    <tr><td><code>No executable found</code></td><td><code>entry_points</code> mal escrito o no recompilaste</td><td>Revisa el paso 7, recompila y haz <code>source</code>. Comprueba con <code>ros2 pkg executables hello_world</code></td></tr>
+    <tr><td><code>SyntaxError: unterminated string literal</code></td><td>Comillas tipográficas en <code>setup.py</code></td><td>Reescribe las comillas a mano</td></tr>
+    <tr><td><code>IndentationError</code> / <code>TabError</code></td><td>Sangría mal copiada del PDF</td><td>4 espacios por nivel, sin tabuladores</td></tr>
+    <tr><td><code>ModuleNotFoundError: No module named 'hello_world.publisher'</code></td><td>El archivo no está en <code>hello_world/hello_world/</code> o se llama distinto</td><td>Debe ser <code>~/ros2_ws/src/hello_world/hello_world/publisher.py</code></td></tr>
+    <tr><td>Corre, pero <code>topic echo</code> no muestra nada</td><td>Terminales con distinto <code>ROS_DOMAIN_ID</code>, o nombre de tópico distinto</td><td><code>echo $ROS_DOMAIN_ID</code> en ambas; revisa que diga <code>/hello_topic</code></td></tr>
+  </table></div>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>¿Qué cambiarías para publicar 5 veces por segundo?</summary><p><code>timer_period = 0.2</code>. Con <code>ros2 topic hz /hello_topic</code> deberías ver cerca de 5 Hz.</p></details>
+    <details><summary>Quieres que cada mensaje lleve un contador: "Hola 1", "Hola 2"... ¿Dónde guardas el número?</summary><p>En un atributo del nodo: <code>self.i = 0</code> en <code>__init__</code>, y en el callback <code>self.i += 1</code> y <code>msg.data = f'Hola {self.i}'</code>. Si lo guardas en una variable local del callback, se reinicia en cada llamada.</p></details>
+    <details><summary>Borras la línea <code>rclpy.spin(...)</code>. ¿Qué pasa?</summary><p>El programa crea el nodo, llega al final de <code>main</code> y termina de inmediato, sin publicar nada: no hay quién dispare el temporizador.</p></details>
+  </div>
+</section>
+
 <section id="c3" class="topic">
   <h3>C3 · Depuración en ROS 2: diagnosticar antes de cambiar código</h3>
   <p class="src">Tips_ROS2_Depuracion</p>
@@ -4286,6 +4434,18 @@ L 429.49875 217.818672
     catch(e){ el.textContent=tex; }
   });
 })();
+</script>
+<script>
+document.querySelectorAll('pre').forEach(function(pre){
+  var b=document.createElement('button'); b.type='button'; b.className='copy'; b.textContent='Copiar';
+  b.addEventListener('click',function(){
+    var t=pre.querySelector('code')?pre.querySelector('code').innerText:pre.innerText;
+    var done=function(){b.textContent='Copiado'; setTimeout(function(){b.textContent='Copiar';},1500);};
+    try{navigator.clipboard.writeText(t).then(done,function(){sel(pre);});}catch(e){sel(pre);}
+  });
+  pre.appendChild(b);
+});
+function sel(el){var r=document.createRange(); r.selectNodeContents(el.querySelector('code')||el); var s=window.getSelection(); s.removeAllRanges(); s.addRange(r);}
 </script>
 
 </body>
