@@ -1,0 +1,1038 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="description" content="Guía de estudio para principiantes: redes neuronales, aprendizaje por refuerzo y ROS 2 (MR3005C).">
+<title>Guía de Sistemas Ciberfísicos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: índice fijo a la izquierda en escritorio, columna única en teléfono; bloques A/B/C con tarjetas de errata y autoevaluación */
+:root{
+  --bg:#f3f4f1; --paper:#fbfbf9; --ink:#1c2430; --muted:#5b6573; --line:#d5d9d3;
+  --accent:#0d6f6b; --accent-soft:#dcebe8; --warn:#9a5412; --warn-soft:#f6ead9;
+  --code-bg:#e9ece7;
+  --f-display:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --f-body:"Literata",Georgia,"Times New Roman",serif;
+  --f-mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#141a21; --paper:#1a222b; --ink:#e3e7ea; --muted:#9aa5b1; --line:#2e3944;
+  --accent:#4fbdb5; --accent-soft:#18332f; --warn:#e3a35f; --warn-soft:#33261a; --code-bg:#212b35; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#141a21; --paper:#1a222b; --ink:#e3e7ea; --muted:#9aa5b1; --line:#2e3944;
+  --accent:#4fbdb5; --accent-soft:#18332f; --warn:#e3a35f; --warn-soft:#33261a; --code-bg:#212b35; color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:17px;line-height:1.65;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.wrap{max-width:1180px;margin:0 auto;display:grid;grid-template-columns:230px minmax(0,1fr);gap:48px;padding-block:40px 80px}
+nav.toc{position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px);align-self:start;font-family:var(--f-display);font-size:14px;max-height:calc(100vh - 48px);overflow:auto}
+nav.toc p{margin:18px 0 6px;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);font-weight:700}
+nav.toc a{display:block;color:var(--ink);text-decoration:none;padding:3px 0 3px 10px;border-left:2px solid var(--line)}
+nav.toc a:hover,nav.toc a:focus-visible{border-left-color:var(--accent);color:var(--accent);outline:none}
+main{min-width:0;max-width:760px}
+h1,h2,h3,h4{font-family:var(--f-display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.02em}
+.lede{font-size:1.15rem;color:var(--muted);margin:14px 0 0}
+.block-head{margin-top:72px;padding-top:20px;border-top:3px solid var(--ink)}
+.block-head .tag{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent)}
+.block-head h2{font-size:1.9rem;font-weight:800;margin-top:4px}
+section.topic{margin-top:48px}
+section.topic>h3{font-size:1.45rem;font-weight:700}
+.src{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-top:6px}
+h4{font-size:1.08rem;font-weight:700;margin-top:28px}
+p{margin:12px 0}
+ul,ol{padding-left:1.3em;margin:10px 0}
+li{margin:5px 0}
+strong{font-weight:600}
+code{font-family:var(--f-mono);font-size:.84em;background:var(--code-bg);padding:1px 5px;border-radius:4px}
+pre{font-family:var(--f-mono);font-size:13.5px;line-height:1.55;background:var(--code-bg);padding:14px 16px;border-radius:6px;overflow-x:auto;margin:14px 0}
+pre code{background:none;padding:0}
+.big{background:var(--accent-soft);padding:14px 18px;border-radius:6px;margin:16px 0;font-size:1.05rem}
+.big b{font-family:var(--f-display);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px}
+.mb{display:block;overflow-x:auto;margin:14px 0;padding:6px 0;text-align:center}
+math{font-size:1.08em}
+.table-wrap{overflow-x:auto;margin:16px 0}
+table{border-collapse:collapse;width:100%;font-size:15px}
+th,td{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-family:var(--f-display);font-size:13px;letter-spacing:.03em;color:var(--muted);font-weight:700}
+td.num{font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:13.5px}
+.errata{border:1.5px dashed var(--warn);background:var(--warn-soft);border-radius:6px;padding:4px 18px 8px;margin:22px 0}
+.errata .lab{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--warn);font-weight:600;margin-top:12px}
+.quiz{margin-top:26px;border-top:1px solid var(--line);padding-top:6px}
+.quiz .lab{font-family:var(--f-mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);font-weight:600;margin:12px 0 4px}
+details{border-bottom:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;font-weight:600}
+summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+details p{margin:8px 0 4px;color:var(--ink)}
+.analogy{font-style:italic;color:var(--muted)}
+figure{margin:20px 0;overflow-x:auto}
+figure svg{display:block;max-width:100%;height:auto;margin:0 auto}
+figcaption{font-size:14px;color:var(--muted);text-align:center;margin-top:6px}
+svg .st{stroke:var(--ink);fill:none;stroke-width:1.6}
+svg .bx{stroke:var(--ink);fill:var(--paper);stroke-width:1.6}
+svg .ac{stroke:var(--accent);fill:var(--accent-soft);stroke-width:1.8}
+svg text{fill:var(--ink);font-family:var(--f-display);font-size:14px}
+svg text.sm{font-size:12px;fill:var(--muted)}
+svg text.mono{font-family:var(--f-mono);font-size:12px}
+svg .arrow{stroke:var(--ink);stroke-width:1.6;fill:none;marker-end:url(#ah)}
+svg .arrowa{stroke:var(--accent);stroke-width:1.8;fill:none;marker-end:url(#aha)}
+.map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin:22px 0}
+.map div{background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:12px 14px;min-width:0}
+.map h4{margin:0 0 4px;font-size:1rem}
+.map p{margin:0;font-size:15px;color:var(--muted)}
+.map .k{font-family:var(--f-mono);font-size:12px;color:var(--accent)}
+@media (max-width:860px){
+  .wrap{grid-template-columns:minmax(0,1fr);gap:8px}
+  nav.toc{position:static;max-height:none;columns:2;column-gap:20px}
+  nav.toc p{break-after:avoid}
+  .map{grid-template-columns:minmax(0,1fr)}
+}
+@media (max-width:480px){nav.toc{columns:1} body{font-size:16px}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+<nav class="toc" aria-label="Índice">
+  <p>Inicio</p>
+  <a href="#mapa">El mapa general</a>
+  <a href="#erratas">Erratas encontradas</a>
+  <p>A · Redes neuronales</p>
+  <a href="#a1">A1 · Neurona, capas y activaciones</a>
+  <a href="#a2">A2 · Cómo aprende una red</a>
+  <a href="#a3">A3 · TensorFlow / Keras</a>
+  <a href="#a4">A4 · PyTorch</a>
+  <a href="#a5">A5 · Ejemplo: el péndulo</a>
+  <p>B · Aprendizaje por refuerzo</p>
+  <a href="#b1">B1 · Fundamentos de RL</a>
+  <a href="#b2">B2 · Q-learning tabular</a>
+  <a href="#b3">B3 · Deep Q-Network (DQN)</a>
+  <a href="#b4">B4 · Actor-Crítico y SAC</a>
+  <p>C · ROS 2</p>
+  <a href="#c1">C1 · Qué es ROS 2</a>
+  <a href="#c2">C2 · Workspace y publicador/suscriptor</a>
+  <a href="#c3">C3 · Depuración</a>
+  <a href="#c4">C4 · Lazo de control distribuido</a>
+</nav>
+
+<main>
+<header>
+  <h1>Guía de Sistemas Ciberfísicos</h1>
+  <p class="lede">Explicación para principiantes de las presentaciones de MR3005C: TensorFlow, PyTorch, Aprendizaje por Refuerzo (Módulos 9 y 10) y ROS 2. Cada tema trae la idea central, los conceptos con ejemplos, las fórmulas explicadas símbolo por símbolo, las correcciones que encontré en las diapositivas y preguntas para ponerte a prueba.</p>
+</header>
+
+<section id="mapa" class="topic">
+  <h3>El mapa general: por qué estos temas van juntos</h3>
+  <p>Todo el curso gira alrededor de un problema: un robot arácnido con un brazo continuo (elástico, movido por tendones) tiene que llegar a un cajón. La visión (Módulo 8) le dice dónde está el objetivo. Falta decidir <em>cómo moverse</em>, y ahí hay dos caminos: escribir un modelo matemático del robot y diseñar un controlador clásico, o dejar que el robot <em>aprenda</em> interactuando. Los brazos continuos son muy difíciles de modelar, y por eso el curso va hacia el aprendizaje.</p>
+  <div class="map">
+    <div><span class="k">Bloque A</span><h4>Redes neuronales</h4><p>La herramienta matemática: funciones con parámetros ajustables que aprenden relaciones a partir de datos. TensorFlow y PyTorch son las librerías para construirlas.</p></div>
+    <div><span class="k">Bloque B</span><h4>Aprendizaje por refuerzo</h4><p>La forma de aprender sin etiquetas: el robot prueba acciones, recibe premios o castigos y mejora. Las redes del bloque A son su "memoria".</p></div>
+    <div><span class="k">Bloque C</span><h4>ROS 2</h4><p>La "plomería" que conecta sensores, controladores y actuadores como programas independientes que se pasan mensajes.</p></div>
+  </div>
+  <p>Orden sugerido de estudio: A → B → C. El bloque B usa todo lo del A (DQN y SAC son redes entrenadas con PyTorch). El bloque C es independiente y lo puedes estudiar en paralelo.</p>
+</section>
+
+<section id="erratas" class="topic">
+  <h3>Erratas encontradas en las diapositivas</h3>
+  <p>Revisé cada diapositiva, incluidas las ecuaciones que vienen como imagen (las amplié para leerlas bien). Estas son las que están mal o pueden confundirte. Cada una se explica en su sección.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Dónde</th><th>Qué dice</th><th>Qué debería decir</th></tr>
+    <tr><td>Mód. 10, Clase 2, "Evolución de RL"</td><td>Actualización de Q-learning sin el término <code>− Q(s,a)</code> y con <code>Q(s′, Q(s,a))</code></td><td><span class="m">Q(s,a) \leftarrow Q(s,a) + \alpha[r + \gamma \max_{a'} Q(s',a') - Q(s,a)]</span> (ver <a href="#b2">B2</a>)</td></tr>
+    <tr><td>Mód. 10, Clase 2, "Simulación numérica de Euler"</td><td>Ecuación de <span class="m">x_2[k+1]</span> con una <span class="m">h</span> de más y sin seno</td><td><span class="m">x_2[k+1] = x_2[k] + h\,\frac{mgL\sin x_1[k] - b\,x_2[k] + u[k]}{mL^2}</span> (ver <a href="#b4">B4</a>)</td></tr>
+    <tr><td>TensorFlow, diap. 58, vs. su propio código</td><td>La fórmula usa <span class="m">\omega_k</span> para actualizar <span class="m">\theta</span>, pero el código usa la <span class="m">\omega</span> ya actualizada</td><td>Son dos métodos distintos (Euler explícito vs. Euler-Cromer). El código está bien; la fórmula describe otro método (ver <a href="#a5">A5</a>)</td></tr>
+    <tr><td>TensorFlow diap. 44 vs. PyTorch diap. 23</td><td>SGD: "datasets pequeños" en uno y "datasets grandes" en otro</td><td>Se contradicen; ver la explicación en <a href="#a2">A2</a></td></tr>
+    <tr><td>TensorFlow diap. 32 y 46</td><td><code>Dense(8, , activation='relu')</code> y <code>'acuracy'</code></td><td>Sobra una coma (error de sintaxis) y es <code>'accuracy'</code></td></tr>
+    <tr><td>ROS 2 Clase 2</td><td>Título "Services and Actions"; rutas <code>~/ros2_ws</code> y <code>~/ros2_ex</code> mezcladas; comillas tipográficas <code>’</code> en <code>setup.py</code></td><td>La clase solo cubre tópicos. Usa una sola ruta. Usa comillas rectas <code>'</code> (ver <a href="#c2">C2</a>)</td></tr>
+    <tr><td>ROS 2 Clase 3</td><td><code>reference_node</code> y <code>manager_node</code> publican en el mismo tópico <code>/reference</code></td><td>Corre solo uno de los dos (ver <a href="#c4">C4</a>)</td></tr>
+    <tr><td>ROS 2 presentación 1, imagen "Topic/Service/Action"</td><td>Pie de imagen "Service = Action, Action = Signal"</td><td>Texto sin sentido de la imagen; usa la diapositiva "Analogy" (ver <a href="#c1">C1</a>)</td></tr>
+  </table></div>
+  <p>Detalles menores: las notas del orador de la Clase 1 del Módulo 9 empiezan con "Bienvenidos al módulo de Visión Artificial" (es un sobrante de otra clase), y la tabla de funciones de activación de PyTorch tiene vacías las columnas "Fórmula" y "Rango" (las completo en <a href="#a1">A1</a>).</p>
+</section>
+
+<!-- ================= BLOQUE A ================= -->
+<div class="block-head"><span class="tag">Bloque A</span><h2>Redes neuronales con TensorFlow y PyTorch</h2></div>
+
+<section id="a1" class="topic">
+  <h3>A1 · La neurona, las capas y las funciones de activación</h3>
+  <p class="src">Curso TensorFlow diap. 4, 22–41 · Curso PyTorch diap. 6, 15–19</p>
+
+  <div class="big"><b>Idea central</b>Una red neuronal es una función matemática con muchas "perillas" (los pesos). Al principio las perillas están en valores al azar; entrenar es girarlas poco a poco hasta que la función produzca las salidas que queremos.</div>
+
+  <h4>Tensores: la forma en que se guardan los datos</h4>
+  <p>Antes de la neurona, el contenedor. Un <strong>tensor</strong> es un arreglo de números con cualquier número de dimensiones. Al número de dimensiones se le llama <strong>rango</strong>:</p>
+  <ul>
+    <li><strong>Rango 0, escalar:</strong> un solo número, como la temperatura de un motor.</li>
+    <li><strong>Rango 1, vector:</strong> una fila de números, como <code>[θ, ω]</code>, el ángulo y la velocidad de un péndulo.</li>
+    <li><strong>Rango 2, matriz:</strong> una tabla, como una imagen en escala de grises de 28×28 píxeles.</li>
+    <li><strong>Rango 3 o más:</strong> pilas de tablas, como una imagen a color (alto × ancho × 3 canales RGB), o un lote de 32 imágenes (32 × 28 × 28).</li>
+  </ul>
+  <p>Ambas librerías usan tensores parecidos a los arreglos de NumPy, con dos capacidades extra: pueden vivir en la GPU y pueden calcular derivadas automáticamente.</p>
+
+  <h4>La neurona artificial (perceptrón)</h4>
+  <p>Una neurona hace dos cosas, siempre en este orden:</p>
+  <ol>
+    <li><strong>Suma ponderada:</strong> multiplica cada entrada por su peso, suma todo y le agrega un sesgo.</li>
+    <li><strong>Activación:</strong> pasa ese resultado por una función no lineal.</li>
+  </ol>
+  <span class="m mb">z = w_1x_1 + w_2x_2 + \dots + w_nx_n + b = \sum_{i=1}^{n} w_i x_i + b \qquad\qquad y = f(z)</span>
+  <ul>
+    <li><span class="m">x_i</span>: las entradas (por ejemplo, lecturas de sensores).</li>
+    <li><span class="m">w_i</span>: los <strong>pesos</strong>. Dicen qué tan importante es cada entrada. Un peso negativo significa que esa entrada "vota en contra".</li>
+    <li><span class="m">b</span>: el <strong>sesgo</strong> (bias). Desplaza el resultado; es como el umbral a partir del cual la neurona "se anima".</li>
+    <li><span class="m">f</span>: la <strong>función de activación</strong>.</li>
+  </ul>
+  <p class="analogy">Analogía: un jurado de tres personas califica un platillo. Cada jurado tiene distinto peso en la decisión final (pesos), el restaurante parte de una calificación base (sesgo), y al final la suma se convierte en "aprobado / reprobado" con una regla (activación).</p>
+
+  <figure>
+    <svg viewBox="0 0 560 210" role="img" aria-label="Diagrama de una neurona: tres entradas multiplicadas por pesos, suma con sesgo, función de activación y salida">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--ink)"/></marker>
+        <marker id="aha" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--accent)"/></marker>
+      </defs>
+      <circle class="bx" cx="50" cy="45" r="20"/><text x="42" y="50">x₁</text>
+      <circle class="bx" cx="50" cy="105" r="20"/><text x="42" y="110">x₂</text>
+      <circle class="bx" cx="50" cy="165" r="20"/><text x="42" y="170">x₃</text>
+      <path class="arrow" d="M70,48 L232,98"/><path class="arrow" d="M70,105 L230,105"/><path class="arrow" d="M70,162 L232,112"/>
+      <text x="130" y="60" class="mono">·w₁</text><text x="130" y="100" class="mono">·w₂</text><text x="130" y="150" class="mono">·w₃</text>
+      <circle class="ac" cx="265" cy="105" r="32"/><text x="252" y="112" style="font-size:22px">Σ</text>
+      <text x="236" y="165" class="sm">+ b (sesgo)</text><path class="arrow" d="M265,150 L265,140"/>
+      <path class="arrow" d="M297,105 L360,105"/><text x="315" y="96" class="mono">z</text>
+      <rect class="bx" x="362" y="80" width="64" height="50" rx="6"/><text x="383" y="111" style="font-size:18px">f</text>
+      <text x="356" y="150" class="sm">activación</text>
+      <path class="arrow" d="M426,105 L500,105"/><text x="508" y="110">y</text>
+    </svg>
+    <figcaption>Una neurona: suma ponderada (Σ) más sesgo, y luego activación.</figcaption>
+  </figure>
+
+  <p><strong>Ejemplo resuelto</strong> (el de la diapositiva 28 de TensorFlow): entradas <code>x = [0.5, 1.0, −0.2]</code>, pesos <code>w = [0.3, −0.8, 0.6]</code>, sesgo <code>b = 0.1</code>, activación sigmoide.</p>
+  <span class="m mb">z = (0.5)(0.3) + (1.0)(-0.8) + (-0.2)(0.6) + 0.1 = 0.15 - 0.80 - 0.12 + 0.10 = -0.67</span>
+  <span class="m mb">y = \sigma(-0.67) = \frac{1}{1+e^{0.67}} \approx 0.338</span>
+  <p>En TensorFlow eso es <code>z = tf.reduce_sum(w * x) + b</code> y <code>tf.sigmoid(z)</code>: <code>w * x</code> multiplica elemento por elemento y <code>reduce_sum</code> suma todo.</p>
+
+  <h4>¿Por qué hace falta la activación?</h4>
+  <p>Sin activación, apilar capas no sirve de nada. Dos capas lineales seguidas son una sola capa lineal disfrazada:</p>
+  <span class="m mb">W_2(W_1x + b_1) + b_2 = \underbrace{(W_2W_1)}_{W}\,x + \underbrace{(W_2b_1 + b_2)}_{b}</span>
+  <p>Una función lineal solo puede dibujar rectas (o planos). El mundo físico no es lineal (el péndulo tiene un seno, el brazo continuo se dobla de formas complicadas). La activación "dobla" la recta y, al combinar muchas neuronas dobladas, la red puede aproximar curvas tan complejas como quieras. Esto es lo que dice el <strong>Teorema de Aproximación Universal</strong> que aparece en el Módulo 10.</p>
+
+  <h4>Funciones de activación (tabla completa)</h4>
+  <p>La diapositiva 19 de PyTorch deja vacías las columnas de fórmula y rango. Aquí están completas:</p>
+  <div class="table-wrap"><table>
+    <tr><th>Función</th><th>Fórmula</th><th>Rango de salida</th><th>Uso típico</th></tr>
+    <tr><td>ReLU</td><td><span class="m">\max(0, z)</span></td><td><span class="m">[0, \infty)</span></td><td>Capas ocultas; la más usada. Riesgo: una neurona que siempre recibe negativos "muere" (siempre da 0 y deja de aprender).</td></tr>
+    <tr><td>Sigmoide</td><td><span class="m">\frac{1}{1+e^{-z}}</span></td><td><span class="m">(0, 1)</span></td><td>Salida de clasificación binaria (se lee como probabilidad). En valores muy grandes o muy pequeños su pendiente es casi 0: gradiente que se desvanece.</td></tr>
+    <tr><td>Tanh</td><td><span class="m">\frac{e^z - e^{-z}}{e^z + e^{-z}}</span></td><td><span class="m">(-1, 1)</span></td><td>Capas ocultas, redes recurrentes. Está centrada en cero, lo que ayuda a entrenar.</td></tr>
+    <tr><td>Softmax</td><td><span class="m">\frac{e^{z_i}}{\sum_j e^{z_j}}</span></td><td>cada salida en <span class="m">(0,1)</span>, todas suman 1</td><td>Salida de clasificación multiclase (una neurona por clase).</td></tr>
+    <tr><td>Leaky ReLU</td><td><span class="m">\max(0.01z, z)</span></td><td><span class="m">(-\infty, \infty)</span></td><td>Como ReLU pero deja pasar un poquito de lo negativo; evita neuronas muertas.</td></tr>
+    <tr><td>ELU</td><td><span class="m">z</span> si <span class="m">z&gt;0</span>; <span class="m">\alpha(e^z - 1)</span> si no</td><td><span class="m">(-\alpha, \infty)</span></td><td>Alternativa suave a ReLU.</td></tr>
+    <tr><td>Lineal (ninguna)</td><td><span class="m">z</span></td><td><span class="m">(-\infty, \infty)</span></td><td>Salida de regresión (predecir un número sin límite).</td></tr>
+  </table></div>
+
+  <h4>Capas y cómo se conectan</h4>
+  <ul>
+    <li><strong>Capa de entrada:</strong> no calcula nada; tiene tantas "neuronas" como características tiene cada dato (2 para <code>[θ, ω]</code>, 784 para una imagen de 28×28 aplanada).</li>
+    <li><strong>Capas ocultas:</strong> donde la red construye sus propias representaciones. Con varias capas ocultas la red es "profunda" (de ahí <em>deep learning</em>).</li>
+    <li><strong>Capa de salida:</strong> su tamaño depende de la tarea: 1 neurona con sigmoide (binaria), 1 por clase con softmax (multiclase), 1 por valor a predecir sin activación (regresión).</li>
+  </ul>
+  <p>Una capa completa hace lo mismo que una neurona, pero para todas sus neuronas a la vez, usando una matriz de pesos <span class="m">W</span>: <span class="m">y = f(Wx + b)</span>. La red entera es una composición (la diapositiva 30 de TensorFlow pierde los paréntesis al exportarse; esta es la forma correcta):</p>
+  <span class="m mb">y = f_3\big(W_3\, f_2\big(W_2\, f_1(W_1x + b_1) + b_2\big) + b_3\big)</span>
+
+  <h4>Cuántos parámetros tiene una capa densa</h4>
+  <p>Cada neurona tiene un peso por cada entrada, más su sesgo: <strong>parámetros = entradas × neuronas + neuronas</strong>. Para la red de la diapositiva 32 de TensorFlow (4 entradas → 16 → 8 → 1):</p>
+  <div class="table-wrap"><table>
+    <tr><th>Capa</th><th>Cálculo</th><th>Parámetros</th></tr>
+    <tr><td>Dense(16)</td><td class="num">4·16 + 16</td><td class="num">80</td></tr>
+    <tr><td>Dense(8)</td><td class="num">16·8 + 8</td><td class="num">136</td></tr>
+    <tr><td>Dense(1)</td><td class="num">8·1 + 1</td><td class="num">9</td></tr>
+    <tr><td><strong>Total</strong></td><td></td><td class="num"><strong>225</strong></td></tr>
+  </table></div>
+  <p>Ese es el número que te muestra <code>model.summary()</code>.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Si quitas todas las funciones de activación de una red de 5 capas, ¿qué tipo de funciones puede aprender?</summary><p>Solo funciones lineales: las 5 capas colapsan en una sola transformación <span class="m">Wx+b</span>. No podría aprender el seno del péndulo.</p></details>
+    <details><summary>Una red clasifica señales de un servomotor en 3 categorías (normal, sobrecarga, falla). ¿Cuántas neuronas y qué activación pondrías en la salida?</summary><p>3 neuronas con softmax (una por clase; las tres probabilidades suman 1).</p></details>
+    <details><summary>¿Cuántos parámetros tiene <code>nn.Linear(64, 12)</code>?</summary><p>64·12 + 12 = 780.</p></details>
+  </div>
+</section>
+
+<section id="a2" class="topic">
+  <h3>A2 · Cómo aprende una red: pérdida, gradiente y optimizador</h3>
+  <p class="src">TensorFlow diap. 38, 43–53 · PyTorch diap. 20–26</p>
+
+  <div class="big"><b>Idea central</b>Se mide qué tan mal predice la red (pérdida), se calcula en qué dirección mover cada peso para que se equivoque menos (gradiente) y se da un pasito en esa dirección (optimizador). Se repite miles de veces.</div>
+
+  <h4>1. La función de pérdida (loss)</h4>
+  <p>Es un solo número que resume el error. Para regresión lo más común es el <strong>error cuadrático medio (MSE)</strong>:</p>
+  <span class="m mb">L = \frac{1}{N}\sum_{j=1}^{N} (y_j - \hat y_j)^2</span>
+  <p><span class="m">y_j</span> es el valor real, <span class="m">\hat y_j</span> la predicción. Se eleva al cuadrado para que errores positivos y negativos no se cancelen y para castigar más los errores grandes.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Tarea</th><th>Keras</th><th>PyTorch</th></tr>
+    <tr><td>Regresión</td><td><code>'mse'</code></td><td><code>nn.MSELoss()</code></td></tr>
+    <tr><td>Regresión con datos atípicos</td><td><code>'mae'</code></td><td><code>nn.L1Loss()</code>, <code>nn.SmoothL1Loss()</code></td></tr>
+    <tr><td>Clasificación binaria</td><td><code>'binary_crossentropy'</code></td><td><code>nn.BCELoss()</code> o <code>nn.BCEWithLogitsLoss()</code></td></tr>
+    <tr><td>Multiclase, etiquetas enteras (0–9)</td><td><code>'sparse_categorical_crossentropy'</code></td><td><code>nn.CrossEntropyLoss()</code></td></tr>
+    <tr><td>Multiclase, etiquetas one-hot</td><td><code>'categorical_crossentropy'</code></td><td>(también <code>nn.CrossEntropyLoss()</code>)</td></tr>
+  </table></div>
+  <div class="errata"><div class="lab">Precisión importante (no viene en las diapositivas)</div>
+    <p>En PyTorch, <code>nn.CrossEntropyLoss()</code> espera los <strong>logits</strong> (las salidas crudas, sin softmax) porque aplica el softmax por dentro. Por eso la red de la diapositiva 21 termina en <code>nn.Linear(128, 10)</code> sin softmax. Si le agregas softmax al final, aplicarías softmax dos veces. Lo mismo pasa con <code>BCEWithLogitsLoss</code>, que incluye la sigmoide (y es más estable numéricamente; por eso la tabla dice "más estable").</p>
+    <p>En Keras es al revés por defecto: <code>sparse_categorical_crossentropy</code> espera probabilidades, así que la última capa sí lleva <code>activation='softmax'</code> (a menos que pases <code>from_logits=True</code>).</p>
+  </div>
+
+  <h4>2. El gradiente y el descenso por gradiente</h4>
+  <p>El gradiente <span class="m">\partial L/\partial w</span> dice cómo cambia la pérdida si mueves un poquito el peso <span class="m">w</span>. Si es positivo, subir <span class="m">w</span> empeora las cosas, así que hay que bajarlo. La regla básica:</p>
+  <span class="m mb">w \leftarrow w - \eta\,\frac{\partial L}{\partial w}</span>
+  <p><span class="m">\eta</span> es la <strong>tasa de aprendizaje</strong> (learning rate, <code>lr</code>): el tamaño del paso. Muy grande y te pasas del mínimo (oscila o diverge); muy pequeña y tardas una eternidad.</p>
+  <p class="analogy">Analogía: estás en una montaña con niebla y quieres llegar al valle. No ves el valle, pero sientes con los pies hacia dónde baja el terreno. Das un paso en esa dirección y vuelves a sentir. La pendiente que sientes es el gradiente; el largo de tu paso es la tasa de aprendizaje.</p>
+  <p>La <strong>retropropagación</strong> (backpropagation) es simplemente la regla de la cadena del cálculo aplicada de la salida hacia la entrada para obtener el gradiente de cada peso. No la programas tú: Keras la hace dentro de <code>fit()</code> y PyTorch con <code>loss.backward()</code> (su motor se llama <em>autograd</em>).</p>
+
+  <h4>3. El optimizador</h4>
+  <p>Es la receta concreta para dar el paso. SGD es la regla de arriba tal cual. Adam y RMSprop adaptan el tamaño del paso para cada peso según cómo se han comportado sus gradientes, y por eso suelen funcionar bien "sin tocar nada". Adam es el que ambos cursos usan por defecto, con <code>lr=0.001</code>.</p>
+  <div class="errata"><div class="lab">Contradicción entre cursos</div>
+    <p>La tabla de TensorFlow dice que SGD es para "datasets pequeños" y la de PyTorch dice "datasets grandes". No pueden ser las dos. En la práctica, SGD (normalmente con <em>momentum</em>) se usa mucho en problemas grandes, por ejemplo en visión por computadora, porque a veces generaliza mejor que Adam, aunque requiere ajustar con más cuidado la tasa de aprendizaje. Para empezar, la recomendación de ambas presentaciones coincide: usa Adam.</p>
+  </div>
+
+  <h4>4. Épocas, lotes e iteraciones</h4>
+  <ul>
+    <li><strong>Lote (batch):</strong> grupo de ejemplos con el que se calcula un gradiente y se da un paso. <code>batch_size=32</code> significa 32 ejemplos por paso.</li>
+    <li><strong>Iteración:</strong> un paso de actualización (un lote).</li>
+    <li><strong>Época (epoch):</strong> una pasada completa por todos los datos de entrenamiento.</li>
+  </ul>
+  <p>Ejemplo con MNIST: 60 000 imágenes y <code>batch_size=32</code> dan 60 000 / 32 = 1 875 iteraciones por época. Lotes pequeños dan pasos más frecuentes pero ruidosos; lotes grandes, pasos más estables pero más memoria.</p>
+
+  <h4>5. Entrenamiento, validación y prueba</h4>
+  <ul>
+    <li><strong>Entrenamiento:</strong> los datos con los que la red ajusta sus pesos.</li>
+    <li><strong>Validación:</strong> datos que la red no usa para aprender, pero que miras durante el entrenamiento para detectar sobreajuste.</li>
+    <li><strong>Prueba (test):</strong> datos que solo usas al final, una vez, para reportar qué tan bien funciona.</li>
+  </ul>
+  <p><strong>Sobreajuste (overfitting):</strong> la red memoriza los datos de entrenamiento en vez de aprender el patrón. Señal típica: la pérdida de entrenamiento sigue bajando pero la de validación empieza a subir. Herramientas contra él: <code>Dropout</code> (apaga neuronas al azar durante el entrenamiento), regularización L1/L2 (castiga pesos grandes) y <code>EarlyStopping</code> (detiene el entrenamiento cuando la validación deja de mejorar).</p>
+
+  <h4>6. Inicialización de pesos</h4>
+  <p>Los pesos iniciales importan. Keras usa <code>glorot_uniform</code> por defecto (buena en general); con ReLU se recomienda <code>he_normal</code> o <code>he_uniform</code>. El porqué se explica a fondo en <a href="#b3">B3</a>.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Tu pérdida de entrenamiento baja de 0.9 a 0.05, pero la de validación baja a 0.4 y luego sube a 0.7. ¿Qué pasa y qué harías?</summary><p>Sobreajuste. Usarías EarlyStopping (quedarte con el modelo del punto donde la validación era mínima), Dropout, regularización, o más datos.</p></details>
+    <details><summary>Tienes 10 000 ejemplos y <code>batch_size=50</code>. ¿Cuántos pasos de optimización hay en 3 épocas?</summary><p>10 000 / 50 = 200 por época; 600 en total.</p></details>
+    <details><summary>¿Por qué la red de clasificación en PyTorch no termina en softmax?</summary><p>Porque <code>nn.CrossEntropyLoss</code> ya aplica el softmax internamente y espera logits.</p></details>
+  </div>
+</section>
+
+<section id="a3" class="topic">
+  <h3>A3 · TensorFlow y Keras</h3>
+  <p class="src">Curso TensorFlow diap. 1–21, 31–54</p>
+
+  <div class="big"><b>Idea central</b>TensorFlow (Google, 2015) te da una API de alto nivel, Keras, con la que describes la red, la "compilas" y llamas a <code>fit()</code>. El ciclo de entrenamiento lo hace la librería por ti.</div>
+
+  <h4>Tensores en TensorFlow</h4>
+  <ul>
+    <li><code>tf.constant(...)</code>: tensor cuyo valor no cambia (datos).</li>
+    <li><code>tf.Variable(...)</code>: tensor que sí cambia. Los pesos de una red se guardan en variables, porque el entrenamiento los modifica.</li>
+    <li>Rellenos y aleatorios: <code>tf.zeros</code>, <code>tf.ones</code>, <code>tf.fill</code>, <code>tf.random.normal</code>, <code>tf.random.uniform</code>, <code>tf.range(0, 10, 2)</code> → <code>[0, 2, 4, 6, 8]</code>.</li>
+    <li>Propiedades: <code>.shape</code> (tamaño de cada dimensión), <code>.dtype</code> (tipo numérico, normalmente <code>float32</code>), <code>tf.rank(t)</code> (número de dimensiones).</li>
+  </ul>
+  <p><strong>Ojo con dos multiplicaciones distintas:</strong> <code>a * b</code> multiplica elemento por elemento (las formas deben coincidir); <code>a @ b</code> o <code>tf.matmul(a, b)</code> es la multiplicación de matrices del álgebra lineal, donde las dimensiones internas deben coincidir: (2,3) @ (3,4) → (2,4).</p>
+  <p><strong>Reshape:</strong> cambia la forma sin cambiar los datos, siempre que el número total de elementos se mantenga. 6 elementos pueden ser 2×3, 3×2, 1×6 o 6×1, pero no 4×2 (eso necesitaría 8).</p>
+  <p><strong>Eager execution:</strong> en TensorFlow 2.x las operaciones se ejecutan al momento y ves el resultado inmediatamente. El nombre "Tensor-Flow" viene de la idea original de que los tensores fluyen por un grafo de operaciones; ese grafo sigue existiendo internamente cuando TensorFlow optimiza el modelo.</p>
+
+  <h4>El flujo de trabajo de Keras</h4>
+  <ol>
+    <li><strong>Crear el modelo</strong> con <code>tf.keras.Sequential([...])</code>, apilando capas en orden. La primera capa declara la forma de la entrada (<code>input_shape=(4,)</code> o <code>tf.keras.Input(shape=(2,))</code>).</li>
+    <li><strong>Preparar los datos:</strong> normalizar (por ejemplo, píxeles /255), dar la forma correcta (<code>reshape(-1, 784)</code> para capas densas, <code>reshape(-1, 28, 28, 1)</code> para convolucionales) y convertir a <code>float32</code>.</li>
+    <li><strong>Compilar</strong> con <code>model.compile(optimizer=..., loss=..., metrics=[...])</code>. Compilar no entrena; solo configura cómo se va a entrenar. Las métricas solo informan, no afectan el aprendizaje.</li>
+    <li><strong>Entrenar</strong> con <code>model.fit(x, y, epochs, batch_size, validation_split, ...)</code>. Devuelve un objeto <code>history</code> con la pérdida y métricas de cada época (útil para graficar).</li>
+    <li><strong>Evaluar</strong> con <code>model.evaluate(x_test, y_test)</code>: devuelve la pérdida y las métricas, en el orden que definiste en <code>compile</code>.</li>
+    <li><strong>Predecir</strong> con <code>model.predict(x)</code>: devuelve probabilidades (softmax o sigmoide) o números directos (regresión).</li>
+  </ol>
+  <p>Parámetros útiles de <code>fit()</code>: <code>shuffle=True</code> (baraja cada época; es el valor por defecto), <code>verbose</code> (0 silencio, 1 barra, 2 una línea por época) y <code>callbacks</code> como <code>EarlyStopping(patience=3)</code>.</p>
+
+  <h4>Parámetros de una capa <code>Dense</code></h4>
+  <p><code>units</code> (número de neuronas, obligatorio), <code>activation</code> (por defecto ninguna, o sea lineal), <code>use_bias</code>, <code>kernel_initializer</code> (cómo arrancan los pesos), <code>kernel_regularizer</code> (L1 lleva pesos a cero, L2 los hace pequeños) y <code>trainable</code> (si es <code>False</code> los pesos se congelan, útil en <em>transfer learning</em>: reutilizar una red ya entrenada y solo reentrenar las últimas capas).</p>
+
+  <div class="errata"><div class="lab">Errores de tipeo en las diapositivas</div>
+    <p>Diapositiva 32: <code>tf.keras.layers.Dense(8, , activation='relu')</code> tiene una coma de más; así no corre. Es <code>Dense(8, activation='relu')</code>.</p>
+    <p>Diapositiva 46: la métrica se escribe <code>'accuracy'</code>, no <code>'acuracy'</code>. Para recall o AUC es más seguro usar los objetos <code>tf.keras.metrics.Recall()</code> y <code>tf.keras.metrics.AUC()</code>.</p>
+  </div>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>¿Por qué los pesos de una red se guardan en <code>tf.Variable</code> y no en <code>tf.constant</code>?</summary><p>Porque el entrenamiento tiene que modificarlos en cada paso; una constante no se puede cambiar.</p></details>
+    <details><summary>Resuelve la mini-actividad de la diapositiva 21 sin mirar: 6 mediciones, tensor, forma, tipo, matriz 2×3 y multiplicar por 2.</summary><p><code>datos = tf.constant([10, 12, 14, 16, 18, 20])</code>; forma <code>(6,)</code>, tipo <code>int32</code>; <code>matriz = tf.reshape(datos, (2, 3))</code>; <code>resultado = matriz * 2</code> → <code>[[20, 24, 28], [32, 36, 40]]</code>.</p></details>
+    <details><summary>¿Qué diferencia hay entre <code>evaluate()</code> y <code>predict()</code>?</summary><p><code>evaluate</code> necesita las etiquetas reales y devuelve números de desempeño (pérdida, métricas). <code>predict</code> solo necesita entradas y devuelve las salidas de la red.</p></details>
+  </div>
+</section>
+
+<section id="a4" class="topic">
+  <h3>A4 · PyTorch</h3>
+  <p class="src">Curso PyTorch diap. 1–27</p>
+
+  <div class="big"><b>Idea central</b>PyTorch (Meta) hace lo mismo que TensorFlow, pero el ciclo de entrenamiento lo escribes tú, línea por línea. Más código, pero ves y controlas cada paso. Es el que usa el Módulo 10 para DQN y SAC.</div>
+
+  <h4>Equivalencias con TensorFlow</h4>
+  <div class="table-wrap"><table>
+    <tr><th>Concepto</th><th>TensorFlow / Keras</th><th>PyTorch</th></tr>
+    <tr><td>Capa densa</td><td><code>Dense(n)</code></td><td><code>nn.Linear(entradas, n)</code> (pide también el tamaño de entrada)</td></tr>
+    <tr><td>Activación</td><td><code>activation='relu'</code> dentro de la capa</td><td><code>nn.ReLU()</code> como capa aparte</td></tr>
+    <tr><td>Red en línea recta</td><td><code>Sequential([...])</code></td><td><code>nn.Sequential(...)</code></td></tr>
+    <tr><td>Entrenar</td><td><code>fit()</code></td><td>bucle escrito a mano</td></tr>
+    <tr><td>Gradientes</td><td>automáticos dentro de <code>fit</code></td><td><code>loss.backward()</code> (autograd)</td></tr>
+  </table></div>
+
+  <h4>Tensores y su forma</h4>
+  <p>Creación: <code>torch.tensor(...)</code>, <code>torch.zeros(2,3)</code>, <code>torch.ones(4)</code>, <code>torch.full((2,2), 7)</code>, <code>torch.eye(3)</code>, <code>torch.rand</code> (uniforme en [0,1)), <code>torch.randn</code> (normal con media 0 y desviación 1), <code>torch.randint(0, 10, (5,))</code>. Propiedades: <code>.shape</code>, <code>.dtype</code>, <code>.device</code> (CPU o <code>cuda</code>), <code>.ndim</code>.</p>
+  <p>NumPy ↔ PyTorch: <code>torch.from_numpy(arr)</code> y <code>tensor.numpy()</code>. Detalle que no dice la diapositiva: ambos <strong>comparten la misma memoria</strong>, así que si modificas uno, el otro cambia también.</p>
+  <div class="table-wrap"><table>
+    <tr><th>Operación</th><th>Qué hace</th><th>Ejemplo de forma</th></tr>
+    <tr><td><code>reshape(2, 3)</code></td><td>cambia la forma (mismo número de elementos); <code>-1</code> = "calcúlalo tú"</td><td class="num">(6,) → (2, 3)</td></tr>
+    <tr><td><code>view(3, 2)</code></td><td>igual, pero solo reinterpreta la memoria; falla si el tensor no es contiguo</td><td class="num">(2, 3) → (3, 2)</td></tr>
+    <tr><td><code>flatten()</code></td><td>aplana a un vector; <code>start_dim=1</code> conserva el lote</td><td class="num">(1, 28, 28) → (784,) o (1, 784)</td></tr>
+    <tr><td><code>squeeze()</code></td><td>quita ejes de tamaño 1</td><td class="num">(1, 1, 3) → (3,)</td></tr>
+    <tr><td><code>unsqueeze(0)</code></td><td>agrega un eje de tamaño 1</td><td class="num">(3,) → (1, 3)</td></tr>
+    <tr><td><code>permute(2, 0, 1)</code></td><td>reordena todos los ejes</td><td class="num">(2, 3, 4) → (4, 2, 3)</td></tr>
+    <tr><td><code>transpose(0, 1)</code></td><td>intercambia dos ejes</td><td class="num">(2, 3, 4) → (3, 2, 4)</td></tr>
+  </table></div>
+  <p><strong>Contigüidad, explicada:</strong> en memoria un tensor es una lista plana. <code>[[1,2,3],[4,5,6]]</code> se guarda como <code>1,2,3,4,5,6</code> y la forma (2,3) solo dice "agrúpalos de 3 en 3". Al transponer, PyTorch no mueve los números; solo cambia la regla de lectura, y ahora para leer <code>[[1,4],[2,5],[3,6]]</code> hay que saltar: 1, 4, 2, 5, 3, 6. Como el orden de lectura ya no coincide con el orden en memoria, el tensor "no es contiguo" y <code>view()</code> se niega. <code>reshape()</code> en ese caso hace una copia reordenada y funciona.</p>
+  <div class="errata"><div class="lab">Precisión</div><p>La diapositiva 10 dice que <code>view()</code> es "más rápido". Más exacto: cuando el tensor es contiguo, <code>reshape()</code> también devuelve una vista sin copiar y cuesta lo mismo. La diferencia es que <code>reshape()</code> copia si hace falta y <code>view()</code> da error. Por eso <code>reshape()</code> es la opción segura.</p></div>
+  <p><code>unsqueeze(0)</code> aparece muchísimo: las redes esperan un <strong>lote</strong> como primera dimensión. Si tienes un solo estado de forma (2,), lo conviertes en un lote de uno (1, 2) para pasarlo por la red, y después <code>squeeze(0)</code> para quitar esa dimensión. Eso es justo lo que hace la simulación recursiva del ejemplo del péndulo.</p>
+
+  <h4>Dos formas de armar una red</h4>
+  <pre><code>class MiRed(nn.Module):
+    def __init__(self):
+        super().__init__()          # inicializa la maquinaria de nn.Module
+        self.capa1 = nn.Linear(784, 128)
+        self.act = nn.ReLU()
+        self.capa2 = nn.Linear(128, 64)
+        self.salida = nn.Linear(64, 10)
+    def forward(self, x):           # cómo fluyen los datos
+        x = self.act(self.capa1(x))
+        x = self.act(self.capa2(x))
+        return self.salida(x)</code></pre>
+  <p><code>__init__</code> declara las capas (y con ello registra sus pesos para que el optimizador los encuentre con <code>modelo.parameters()</code>). <code>forward</code> describe el cálculo. Nunca llamas <code>forward</code> directo: escribes <code>modelo(x)</code>. <code>nn.Sequential</code> es el atajo cuando los datos solo pasan de una capa a la siguiente.</p>
+
+  <h4>El bucle de entrenamiento: 5 pasos por lote</h4>
+  <pre><code>for epoca in range(num_epocas):            # bucle externo: pasadas completas
+    modelo.train()
+    for x, y in train_loader:                 # bucle interno: lotes
+        optimizador.zero_grad()   # 1. borrar gradientes del paso anterior
+        salida = modelo(x)        # 2. propagación hacia adelante
+        perdida = criterio(salida, y)  # 3. calcular el error
+        perdida.backward()        # 4. retropropagación: calcula gradientes
+        optimizador.step()        # 5. mover los pesos</code></pre>
+  <ul>
+    <li><strong>¿Por qué <code>zero_grad()</code>?</strong> PyTorch <em>suma</em> los gradientes nuevos a los que ya había. Si no los borras, cada paso usaría la mezcla de todos los lotes anteriores. Es el error más común de principiante, y el Módulo 10 lo vuelve a recalcar.</li>
+    <li><strong><code>modelo.train()</code> / <code>modelo.eval()</code>:</strong> cambian el comportamiento de capas como Dropout y BatchNorm (activas al entrenar, desactivadas al evaluar).</li>
+    <li><strong><code>with torch.no_grad():</code></strong> al evaluar, le dice a PyTorch que no guarde información para gradientes. Ahorra memoria y tiempo.</li>
+    <li><strong><code>perdida.item()</code></strong> convierte un tensor de un solo número en un número normal de Python.</li>
+  </ul>
+  <p>Detalle menor de la diapositiva 26: el <code>print</code> muestra <code>perdida.item()</code>, que es la pérdida del <em>último lote</em>, no el promedio de la época. Para el promedio, acumula como en la diapositiva 25 (<code>perdida_total</code>) y divide entre <code>len(train_loader)</code>.</p>
+
+  <h4>Guardar y cargar</h4>
+  <p><code>torch.save(modelo.state_dict(), "modelo.pth")</code> guarda solo los pesos (el <code>state_dict</code> es un diccionario capa → tensores). Para cargar, primero vuelves a crear la arquitectura (<code>MiRed()</code>), luego <code>load_state_dict(torch.load(...))</code> y <code>eval()</code>. Por eso necesitas conservar el código de la clase: el archivo no guarda la estructura.</p>
+
+  <h4>¿Cuál elegir?</h4>
+  <p>La tabla de la diapositiva 3 es una generalización razonable: Keras es más rápido para empezar y tiene buenas herramientas de despliegue (TensorFlow Lite, TensorFlow.js, Serving); PyTorch domina en investigación y es más fácil de depurar porque se comporta como Python normal. Los conceptos son idénticos. Si entiendes uno, entiendes el otro.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Tienes un estado <code>s</code> de forma <code>(4,)</code>. ¿Cómo lo pasas por una red que espera <code>(lote, 4)</code>?</summary><p><code>modelo(s.unsqueeze(0))</code>, que tiene forma (1, 4).</p></details>
+    <details><summary>¿Qué pasa si olvidas <code>optimizador.zero_grad()</code>?</summary><p>Los gradientes se acumulan entre lotes; cada paso usa una suma de gradientes viejos y nuevos, y el entrenamiento se vuelve inestable o incorrecto.</p></details>
+    <details><summary>Ordena: <code>step()</code>, <code>backward()</code>, <code>zero_grad()</code>, calcular pérdida, <code>modelo(x)</code>.</summary><p><code>zero_grad()</code> → <code>modelo(x)</code> → pérdida → <code>backward()</code> → <code>step()</code>.</p></details>
+  </div>
+</section>
+
+<section id="a5" class="topic">
+  <h3>A5 · El ejemplo de ambos cursos: aprender la dinámica de un péndulo</h3>
+  <p class="src">TensorFlow diap. 55–72 · PyTorch diap. 28–41</p>
+
+  <div class="big"><b>Idea central</b>Se simula un péndulo con física, se guardan los datos y se entrena una red para que, dado el estado de ahora, prediga el estado del siguiente instante. Es <strong>identificación de sistemas</strong>: la red aprende "cómo se mueve" el péndulo sin que le des la ecuación.</div>
+
+  <h4>1. La física</h4>
+  <p>Péndulo simple de longitud <span class="m">L</span> y masa <span class="m">m</span>, sin fricción:</p>
+  <span class="m mb">mL^2\ddot\theta + mgL\sin\theta = 0 \;\;\Rightarrow\;\; \ddot\theta = -\frac{g}{L}\sin\theta</span>
+  <p>Es de segundo orden (tiene <span class="m">\ddot\theta</span>). Para simularlo se convierte en dos ecuaciones de primer orden con el <strong>estado</strong> <span class="m">x = [\theta, \omega]</span>, donde <span class="m">\omega = \dot\theta</span>:</p>
+  <span class="m mb">\dot\theta = \omega \qquad \dot\omega = -\frac{g}{L}\sin\theta</span>
+  <p>El estado es la información mínima que necesitas para predecir el futuro: con el ángulo y la velocidad de ahora, la física determina todo lo que sigue.</p>
+
+  <h4>2. Simular con el método de Euler</h4>
+  <p>La computadora no puede resolver "en continuo"; avanza en pasos de tiempo <span class="m">\Delta t</span> (aquí 0.01 s). Euler dice: el valor siguiente es el actual más la velocidad de cambio por el tiempo transcurrido.</p>
+  <span class="m mb">x_{k+1} = x_k + \dot x_k\,\Delta t</span>
+  <div class="errata"><div class="lab">La fórmula y el código no coinciden</div>
+    <p>La diapositiva 58 de TensorFlow escribe Euler explícito: <span class="m">\omega_{k+1} = \omega_k - \frac{g}{L}\sin\theta_k\,\Delta t</span> y <span class="m">\theta_{k+1} = \theta_k + \omega_k\,\Delta t</span> (usa la velocidad <em>vieja</em>).</p>
+    <p>Pero el código de ambos cursos hace primero <code>omega = omega + alpha*dt</code> y luego <code>theta = theta + omega*dt</code>, es decir, usa la velocidad <em>ya actualizada</em> <span class="m">\omega_{k+1}</span>. Eso es <strong>Euler semi-implícito o Euler-Cromer</strong>, y el comentario del código de PyTorch sí lo nombra bien.</p>
+    <p>¿Importa? Sí. Con Euler explícito un péndulo sin fricción gana energía artificialmente en cada paso y su oscilación crece. Euler-Cromer conserva la energía mucho mejor, y por eso es la opción correcta para este ejemplo. El código está bien; la fórmula de la diapositiva describe otro método.</p>
+  </div>
+
+  <h4>3. Armar el dataset: "ahora" → "siguiente"</h4>
+  <pre><code>X = np.column_stack((theta[:-1], omega[:-1]))   # estado en k   (todos menos el último)
+Y = np.column_stack((theta[1:],  omega[1:]))    # estado en k+1 (todos menos el primero)</code></pre>
+  <p>Cada fila de <code>X</code> es un estado y la fila correspondiente de <code>Y</code> es el estado 0.01 s después. Es aprendizaje supervisado: la "etiqueta" es el futuro que ya conocemos por la simulación. El 80 % inicial se usa para entrenar y el 20 % final para probar, <strong>sin barajar</strong>, porque es una serie de tiempo.</p>
+
+  <h4>4. La red y el entrenamiento</h4>
+  <p>Red 2 → 16 → 16 → 2 con <code>tanh</code> en las capas ocultas y salida lineal (es regresión: predice dos números). Pérdida MSE, optimizador Adam, 100 épocas. Aquí se entrena con <strong>todo el conjunto a la vez</strong> en cada época (un solo lote gigante), por eso no hay bucle interno de lotes.</p>
+
+  <h4>5. Predicción a un paso vs. simulación recursiva</h4>
+  <p>Este es el concepto más importante del ejemplo:</p>
+  <ul>
+    <li><strong>Predicción a un paso:</strong> a la red siempre le das el estado <em>real</em> y predice el siguiente. Se ve casi perfecta, porque cada error se "resetea" con el dato real.</li>
+    <li><strong>Simulación recursiva (lazo libre):</strong> le das solo el estado inicial, y después le das <em>su propia predicción</em> como nueva entrada, una y otra vez. Los errores pequeños se acumulan y la trayectoria se va desviando.</li>
+  </ul>
+  <p class="analogy">Analogía: pronosticar el clima de mañana sabiendo el clima real de hoy es fácil. Pronosticar el de dentro de 30 días usando tu pronóstico de ayer como si fuera real, y así sucesivamente, es mucho más difícil, porque cada error se arrastra.</p>
+  <p>Si quieres usar la red como "simulador" del robot (por ejemplo, para entrenar un controlador sobre ella), lo que importa es la simulación recursiva.</p>
+
+  <h4>6. Normalización</h4>
+  <span class="m mb">x_n = \frac{x - \mu_{\text{train}}}{\sigma_{\text{train}}} \qquad\qquad x = x_n\,\sigma_{\text{train}} + \mu_{\text{train}}</span>
+  <p>Se resta la media y se divide entre la desviación estándar para que cada variable quede centrada en 0 con dispersión 1. Ayuda porque <span class="m">\theta</span> y <span class="m">\omega</span> tienen escalas distintas y porque <code>tanh</code> se satura (se aplana) con entradas grandes. Dos detalles que el código hace bien y debes recordar:</p>
+  <ul>
+    <li>La media y la desviación se calculan <strong>solo con los datos de entrenamiento</strong> y se reusan para prueba. Usar estadísticas de prueba sería "hacer trampa" (fuga de datos).</li>
+    <li>La red ahora predice valores normalizados, así que hay que <strong>desnormalizar</strong> la salida antes de compararla. En la simulación recursiva se normaliza, se predice y se desnormaliza en cada paso.</li>
+  </ul>
+  <p>Conexión con el bloque B: en el Módulo 10 aparece la misma idea con un péndulo que sí tiene entrada de control <span class="m">u</span>. Para que la red aprenda el efecto de <span class="m">u</span>, hay que excitar el sistema con señales variadas (PRBS). En este ejemplo no hay <span class="m">u</span>, así que la red solo aprende el movimiento libre.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>¿Por qué la predicción a un paso se ve mucho mejor que la simulación recursiva?</summary><p>Porque a un paso siempre recibe el estado real; en la recursiva recibe su propia predicción y los errores se acumulan.</p></details>
+    <details><summary>¿Por qué no se barajan los datos al separar entrenamiento y prueba?</summary><p>Porque es una serie de tiempo; queremos probar si la red predice un tramo de la trayectoria que no vio, no instantes sueltos mezclados con los de entrenamiento.</p></details>
+    <details><summary>¿Qué estado tiene el péndulo y por qué no basta con el ángulo?</summary><p><span class="m">[\theta, \omega]</span>. Con solo el ángulo no sabes si el péndulo va subiendo o bajando, ni qué tan rápido.</p></details>
+  </div>
+</section>
+
+<!-- ================= BLOQUE B ================= -->
+<div class="block-head"><span class="tag">Bloque B</span><h2>Aprendizaje por refuerzo (Módulos 9 y 10)</h2></div>
+
+<section id="b1" class="topic">
+  <h3>B1 · Fundamentos del aprendizaje por refuerzo</h3>
+  <p class="src">Módulo 9, Clase 1</p>
+
+  <div class="big"><b>Idea central</b>En vez de darle al robot ejemplos con la respuesta correcta, lo dejamos actuar y le damos una calificación (recompensa). Él solo descubre qué secuencia de acciones da más recompensa a la larga.</div>
+
+  <h4>¿Por qué no aprendizaje supervisado?</h4>
+  <div class="table-wrap"><table>
+    <tr><th>Tipo</th><th>Datos</th><th>Señal de aprendizaje</th><th>Ejemplo del curso</th></tr>
+    <tr><td>Supervisado</td><td>pares (entrada, respuesta correcta)</td><td>error contra la respuesta correcta</td><td>detectar la gaveta con YOLO</td></tr>
+    <tr><td>No supervisado</td><td>solo entradas</td><td>ninguna; busca patrones o grupos</td><td>agrupar lecturas de corriente para detectar anomalías</td></tr>
+    <tr><td>Por refuerzo</td><td>experiencias (estado, acción, recompensa)</td><td>una recompensa numérica</td><td>aprender a caminar y doblar el brazo continuo</td></tr>
+  </table></div>
+  <p>Para entrenar al brazo continuo de forma supervisada, alguien tendría que decirle la flexión exacta correcta en cada milímetro y ante cada perturbación. Nadie tiene esas etiquetas. Lo que sí podemos decir es "llegaste" o "chocaste".</p>
+
+  <h4>El lazo agente–ambiente</h4>
+  <figure>
+    <svg viewBox="0 0 560 220" role="img" aria-label="Lazo agente-ambiente: el agente envía una acción al ambiente, el ambiente devuelve estado y recompensa">
+      <rect class="ac" x="190" y="14" width="180" height="56" rx="8"/><text x="230" y="40">AGENTE</text><text x="212" y="58" class="sm">política π(a | s)</text>
+      <rect class="bx" x="190" y="150" width="180" height="56" rx="8"/><text x="225" y="176">AMBIENTE</text><text x="200" y="194" class="sm">robot + mundo físico</text>
+      <path class="arrowa" d="M370,42 C470,42 470,178 372,178"/><text x="452" y="104">acción Aₜ</text>
+      <path class="arrow" d="M190,178 C90,178 90,42 188,42"/><text x="14" y="96">estado Sₜ₊₁</text><text x="14" y="116">recompensa Rₜ₊₁</text>
+    </svg>
+    <figcaption>El agente observa, actúa, el ambiente responde. Se repite en cada instante t.</figcaption>
+  </figure>
+  <ul>
+    <li><strong>Agente:</strong> el algoritmo que decide (corre en la PC o la Raspberry Pi).</li>
+    <li><strong>Ambiente:</strong> todo lo demás: el hexápodo, el brazo, la gaveta, la física.</li>
+    <li><strong>Estado <span class="m">S_t</span>:</strong> lo que el agente observa ahora (posición, postura de patas, alineación).</li>
+    <li><strong>Acción <span class="m">A_t</span>:</strong> lo que manda a los actuadores (avanzar, girar, tensar un cable).</li>
+    <li><strong>Recompensa <span class="m">R_{t+1}</span>:</strong> un número que califica el resultado de esa acción.</li>
+    <li><strong>Política <span class="m">\pi(a \mid s)</span>:</strong> la regla de decisión del agente: "en este estado, haz esta acción" (o con qué probabilidad hacer cada una). Es lo que se aprende.</li>
+  </ul>
+  <p>El objetivo no es la recompensa inmediata sino la suma de recompensas futuras, el <strong>retorno</strong>, donde las lejanas pesan menos gracias al factor de descuento <span class="m">\gamma</span> (entre 0 y 1):</p>
+  <span class="m mb">G_t = R_{t+1} + \gamma R_{t+2} + \gamma^2 R_{t+3} + \dots = \sum_{k=0}^{\infty}\gamma^k R_{t+k+1}</span>
+  <p>Con <span class="m">\gamma = 0.93</span> (el valor que menciona el Módulo 10), una recompensa a 10 pasos vale <span class="m">0.93^{10} \approx 0.48</span> de lo que valdría hoy. <span class="m">\gamma</span> cerca de 1 = agente paciente; cerca de 0 = agente que solo piensa en el ahora.</p>
+  <p class="analogy">Analogía: entrenar a un perro. No le explicas la física de sentarse; él prueba cosas y cuando acierta recibe una galleta. Con el tiempo aprende qué conducta trae galletas.</p>
+
+  <h4>Exploración vs. explotación</h4>
+  <ul>
+    <li><strong>Explotar:</strong> hacer lo mejor que conoces hasta ahora. Rinde bien a corto plazo, pero puedes quedarte atorado en una solución mediocre (un mínimo local) sin saber que había algo mejor.</li>
+    <li><strong>Explorar:</strong> probar acciones nuevas o al azar. Así descubres mejores caminos, pero en un robot real una acción errática puede chocar o romper algo.</li>
+  </ul>
+  <p>La regla del curso: explorar mucho al inicio y explotar cada vez más conforme el agente aprende. En el Módulo 10 esto se implementa con ε-greedy (<a href="#b3">B3</a>).</p>
+  <p class="analogy">Analogía: en una ciudad nueva, si siempre vas al primer restaurante que te gustó (explotar), nunca descubres el mejor. Si cada día pruebas uno al azar (explorar), comes mal muchas veces. Lo sensato es probar mucho al llegar y luego quedarte con tus favoritos.</p>
+
+  <h4>El código: <code>caminata_aleatoria.py</code></h4>
+  <p>Es un mundo de una dimensión: el robot está en una posición entera de 0 a 12 y la gaveta está en la posición 10.</p>
+  <ul>
+    <li><strong>Acciones:</strong> 0 = retroceder (−1), 1 = quedarse (0), 2 = avanzar (+1).</li>
+    <li><strong>Resbalón (estocasticidad):</strong> si la acción implica moverse, hay 15 % de probabilidad de que las patas patinen y el robot no se mueva. Modela que el mundo real no siempre obedece.</li>
+    <li><strong>Recompensas:</strong> llegar exactamente a 10 → +100 y termina (éxito); pasarse de 10 → −50 y termina (choque con la chapa); cualquier otro paso → −1 y sigue.</li>
+  </ul>
+  <p>El −1 por paso es clave: sin él, llegar en 5 pasos o en 5 000 daría lo mismo. Con él, cada paso extra cuesta, y el agente aprende a llegar rápido. Esto se llama <strong>diseño de la recompensa</strong>, y es donde el ingeniero "programa" el objetivo. La bandera <code>terminado</code> marca el fin de un <strong>episodio</strong> (un intento completo, de inicio a éxito o choque).</p>
+  <p>Este script solo toma acciones al azar; todavía no aprende. Sirve como línea base y para entender el ambiente antes de agregar el algoritmo de aprendizaje.</p>
+  <p>Sobre la arquitectura del laboratorio: dibujar el mundo con caracteres en la terminal (ANSI) en lugar de abrir ventanas gráficas evita que WSL2 se congele en laptops con 8 GB de RAM. Es una decisión práctica; no cambia la teoría.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Si quitas el −1 por paso, ¿qué comportamiento esperarías del agente?</summary><p>Le daría igual tardar mucho; podría quedarse dando vueltas o "quieto" indefinidamente sin penalización, porque solo importa llegar eventualmente.</p></details>
+    <details><summary>¿Por qué la exploración es más peligrosa en un robot real que en simulación?</summary><p>Porque las acciones al azar pueden provocar choques, sobrecorrientes o desgaste mecánico. Por eso se entrena primero en simulación.</p></details>
+    <details><summary>Con <span class="m">\gamma = 0.5</span>, ¿cuánto vale hoy una recompensa de +100 que llega en 3 pasos?</summary><p><span class="m">0.5^3 \times 100 = 12.5</span>.</p></details>
+  </div>
+</section>
+
+<section id="b2" class="topic">
+  <h3>B2 · Q-learning tabular: la base de todo</h3>
+  <p class="src">Módulo 10, Clase 1 (diap. 2) y Clase 2 (diap. 2)</p>
+
+  <div class="big"><b>Idea central</b>Se arma una tabla con una casilla por cada combinación (estado, acción). Cada casilla guarda <span class="m">Q(s,a)</span>: "cuánta recompensa total espero si en el estado <span class="m">s</span> hago la acción <span class="m">a</span> y después sigo jugando bien". Para decidir, el agente elige la acción con el Q más alto.</div>
+
+  <h4>La actualización de Bellman (versión corregida)</h4>
+  <span class="m mb">Q(s,a) \leftarrow Q(s,a) + \alpha\Big[\underbrace{r + \gamma\max_{a'}Q(s',a')}_{\text{objetivo (lo que observé)}} - \underbrace{Q(s,a)}_{\text{lo que creía}}\Big]</span>
+  <ul>
+    <li><span class="m">r</span>: la recompensa que acabas de recibir.</li>
+    <li><span class="m">s'</span>: el estado al que llegaste.</li>
+    <li><span class="m">\max_{a'} Q(s',a')</span>: lo mejor que crees que puedes conseguir desde ahí.</li>
+    <li>El corchete es el <strong>error de diferencia temporal (TD)</strong>: la sorpresa entre lo que esperabas y lo que pasó.</li>
+    <li><span class="m">\alpha</span>: tasa de aprendizaje; qué tanto corriges tu creencia con cada sorpresa.</li>
+  </ul>
+  <p><strong>Ejemplo numérico:</strong> <span class="m">Q(s,a)=0</span>, <span class="m">r=-1</span>, <span class="m">\max Q(s',\cdot)=5</span>, <span class="m">\gamma=0.9</span>, <span class="m">\alpha=0.1</span>. Objetivo: <span class="m">-1 + 0.9 \cdot 5 = 3.5</span>. Error TD: <span class="m">3.5 - 0 = 3.5</span>. Nuevo valor: <span class="m">0 + 0.1 \cdot 3.5 = 0.35</span>. La creencia se mueve un 10 % hacia lo observado.</p>
+  <div class="errata"><div class="lab">Errata</div><p>En la diapositiva "Evolución de RL" (Módulo 10, Clase 2) la fórmula aparece como <span class="m">Q(s,a) \leftarrow Q(s,a) + \alpha[r + \gamma\max_{a'}Q(s', Q(s,a))]</span>. Le falta restar <span class="m">Q(s,a)</span> dentro del corchete, y el argumento de Q debe ser <span class="m">(s', a')</span>. Sin la resta, Q crecería sin control en cada actualización.</p></div>
+
+  <h4>El límite: la maldición de la dimensionalidad</h4>
+  <p>La tabla tiene <span class="m">|S| \times |A|</span> casillas. En una rejilla de 64 casillas con 4 acciones son 256: fácil. Pero si discretizas 6 variables de un brazo en 100 niveles cada una, son <span class="m">100^6 = 10^{12}</span> estados (un billón), imposible de guardar y de visitar. Y peor: la tabla no generaliza. Un estado que nunca visitaste no tiene ningún valor útil, aunque sea casi igual a uno que sí conoces. La solución del Módulo 10 es reemplazar la tabla por una red neuronal.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Si el error TD es negativo, ¿qué le pasa a <span class="m">Q(s,a)</span>?</summary><p>Baja: la acción resultó peor de lo que el agente creía.</p></details>
+    <details><summary>¿Qué significa "no generaliza" en una tabla Q?</summary><p>Que aprender sobre un estado no dice nada sobre estados parecidos; cada casilla se aprende por separado.</p></details>
+  </div>
+</section>
+
+<section id="b3" class="topic">
+  <h3>B3 · Deep Q-Network (DQN)</h3>
+  <p class="src">Módulo 10, Clase 1 (FrozenLake)</p>
+
+  <div class="big"><b>Idea central</b>DQN cambia la tabla por una red neuronal <span class="m">Q(s,a;\theta)</span> que recibe el estado y devuelve un valor Q por cada acción. Como entrenar una red con datos de RL es inestable, DQN agrega tres "parches": memoria de repetición, red objetivo y recorte de gradientes.</div>
+
+  <h4>La red: entradas, salidas y por qué no hay softmax</h4>
+  <p>En FrozenLake 8×8 hay 64 estados y 4 acciones. La red de la clase es <code>Linear(64,12) → ReLU → Linear(12,8) → ReLU → Linear(8,4)</code>. Le das un estado y te devuelve los 4 valores Q a la vez; eliges la acción con el mayor. No lleva softmax porque no buscamos probabilidades sino los valores Q crudos, que pueden ser cualquier número.</p>
+
+  <h4>Codificación one-hot del estado</h4>
+  <p>Gymnasium da el estado como un entero de 0 a 63. Si se lo pasas así a la red, ella interpretaría que la casilla 60 es "más" que la 3, o que la 15 está "cerca" de la 16 en un sentido numérico, cuando solo son etiquetas de casillas. La solución es convertir el entero en un vector de 64 posiciones con un 1 en la casilla activa y 0 en las demás:</p>
+  <span class="m mb">s = 15 \;\Rightarrow\; x(s) = [0, \dots, 0, \underset{\text{posición } 15}{1}, 0, \dots, 0] \in \{0,1\}^{64}</span>
+  <p>Así todos los estados son "igual de distintos" entre sí, y la primera capa aprende un conjunto de pesos propio para cada casilla. (Las notas del orador lo explican con un ejemplo confuso; la idea es esta.)</p>
+
+  <h4>Inicialización de He (Kaiming)</h4>
+  <ul>
+    <li><strong>Pesos en cero (o todos iguales):</strong> todas las neuronas de una capa calculan lo mismo y reciben el mismo gradiente; nunca se diferencian. Es como tener una sola neurona repetida.</li>
+    <li><strong>Pesos muy pequeños:</strong> la señal se encoge capa tras capa y los gradientes se desvanecen.</li>
+    <li><strong>Pesos muy grandes:</strong> la señal crece capa tras capa y los gradientes explotan.</li>
+  </ul>
+  <p>He propone sortear los pesos uniformemente en un rango que depende de cuántas entradas tiene la neurona (<span class="m">\text{fan\_in}</span>):</p>
+  <span class="m mb">W_{ij} \sim U\!\left(-\sqrt{\tfrac{6}{\text{fan\_in}}},\; \sqrt{\tfrac{6}{\text{fan\_in}}}\right)</span>
+  <p>Con más entradas, cada peso debe ser más pequeño para que la suma no crezca. El 6 sale de que ReLU anula la mitad de las señales (las negativas) y hay que compensarlo. Resultado: la varianza de la señal se mantiene parecida de capa en capa. En código: <code>nn.init.kaiming_uniform_(capa.weight, nonlinearity='relu')</code>.</p>
+  <p>Precisión: <code>nn.Linear</code> de PyTorch ya trae por defecto una variante de Kaiming, pero con otro parámetro que da un rango más estrecho (<span class="m">\pm 1/\sqrt{\text{fan\_in}}</span>). Por eso el código de la clase la aplica explícitamente con <code>nonlinearity='relu'</code>.</p>
+
+  <h4>Problema 1: datos correlacionados → memoria de repetición (Experience Replay)</h4>
+  <p>Las experiencias del robot llegan en secuencia: el paso 101 se parece muchísimo al 100. El entrenamiento de redes supone datos independientes (i.i.d.). Si entrenas con la secuencia tal cual, la red se sobreajusta a lo último que vivió y olvida lo anterior (olvido catastrófico).</p>
+  <p>Solución: guardar cada transición <span class="m">e_t = (s_t, a_t, r_{t+1}, s_{t+1}, d_{t+1})</span> en un búfer circular de capacidad fija (cuando se llena, lo más viejo se borra) y entrenar con <strong>mini-lotes sacados al azar</strong> de ahí. Al mezclar experiencias de distintos momentos y episodios, se rompe la correlación.</p>
+  <p class="analogy">Analogía: estudiar para un examen repasando tarjetas barajadas de todo el semestre, en vez de releer solo el último capítulo una y otra vez.</p>
+
+  <h4>Problema 2: objetivo móvil → red objetivo (Target Network)</h4>
+  <p>El objetivo de Bellman <span class="m">r + \gamma\max Q(s',a';\theta)</span> se calcula con la misma red que estás entrenando. Cada vez que ajustas <span class="m">\theta</span>, el objetivo también se mueve: es como tirarle a un blanco que se desplaza cada vez que apuntas. El aprendizaje oscila o diverge.</p>
+  <p>Solución: mantener una <strong>copia congelada</strong> de la red, con parámetros <span class="m">\theta^-</span>, que solo se usa para calcular el objetivo. Cada <span class="m">T_{\text{update}}</span> pasos se copian los pesos de la principal a la objetivo (<span class="m">\theta^- \leftarrow \theta</span>, "hard update"). Entre copias, el blanco está quieto.</p>
+
+  <h4>Problema 3: gradientes explosivos → recorte de norma (Gradient Clipping)</h4>
+  <p>Al principio las estimaciones Q son basura, los errores son enormes y los gradientes también; un solo paso puede destruir la red y llenarla de <code>NaN</code>. El recorte limita el <em>tamaño</em> del vector gradiente sin cambiar su <em>dirección</em>:</p>
+  <span class="m mb">g_{\text{cap}} = \begin{cases} g &amp; \text{si } \lVert g\rVert_2 \le c \\[4pt] \dfrac{c}{\lVert g\rVert_2}\,g &amp; \text{si } \lVert g\rVert_2 &gt; c \end{cases}</span>
+  <p>Ejemplo con <span class="m">c = 3</span>: si la norma del gradiente es 12, se multiplica todo por 3/12 = 0.25. En PyTorch va justo entre <code>backward()</code> y <code>step()</code>:</p>
+  <pre><code>optimizer.zero_grad()
+loss.backward()
+torch.nn.utils.clip_grad_norm_(main_net.parameters(), max_norm=3.0)
+optimizer.step()</code></pre>
+
+  <h4>El corazón matemático: objetivo, error TD y pérdida</h4>
+  <span class="m mb">y_j = r_j + \gamma\,(1 - d_j)\,\max_{a'} Q(s'_j, a'; \theta^-)</span>
+  <ul>
+    <li><span class="m">y_j</span>: el objetivo para la transición <span class="m">j</span> del mini-lote.</li>
+    <li><span class="m">d_j</span>: vale 1 si <span class="m">s'_j</span> es terminal (llegó a la meta o cayó en un hoyo), 0 si no. Si es terminal, <span class="m">(1-d_j) = 0</span> borra el futuro: <span class="m">y_j = r_j</span>, porque después del final no hay más recompensas.</li>
+    <li>Se usa <span class="m">\theta^-</span> (red objetivo), no <span class="m">\theta</span>.</li>
+  </ul>
+  <span class="m mb">\delta_j = y_j - Q(s_j, a_j; \theta) \qquad\qquad L(\theta) = \frac{1}{B}\sum_{j=1}^{B}\delta_j^2</span>
+  <p>El error TD <span class="m">\delta_j</span> compara el objetivo con lo que la red principal predice para la acción que de verdad se tomó. La pérdida es el MSE sobre el mini-lote de tamaño <span class="m">B</span>. Es exactamente el mismo esquema de A2: hay una "respuesta" (<span class="m">y_j</span>) y una predicción, solo que aquí la respuesta la fabrica la propia experiencia.</p>
+
+  <h4>Exploración con ε-greedy decreciente</h4>
+  <p>Con probabilidad <span class="m">\varepsilon</span> el agente toma una acción al azar (explora); con probabilidad <span class="m">1-\varepsilon</span> toma la de mayor Q (explota). Al final de cada episodio:</p>
+  <span class="m mb">\varepsilon_{k+1} = \max(\varepsilon_{\min},\; \varepsilon_k \cdot \delta_\varepsilon)</span>
+  <p>En la clase <span class="m">\varepsilon</span> arranca en 0.999 y baja hasta un piso de 0.01. (Amplié la imagen para confirmar que es una multiplicación.) Ejemplo propio, no de la diapositiva: con <span class="m">\delta_\varepsilon = 0.995</span>, se tarda unos 919 episodios en llegar al piso, porque <span class="m">0.999 \cdot 0.995^{n} = 0.01</span> da <span class="m">n \approx 919</span>.</p>
+
+  <h4>"Gating" con recompensas dispersas</h4>
+  <p>En FrozenLake la recompensa es 0 en todos lados y 1 solo en la meta. Al principio el agente casi nunca llega, así que la memoria está llena de ceros. La clase propone no entrenar hasta que la memoria tenga suficientes datos y al menos un éxito (<code>sum(rewards) &gt; 0</code>). Ten en cuenta que esto es una técnica práctica del curso; el DQN estándar solo usa un periodo de "calentamiento" (empezar a entrenar después de N pasos) sin exigir un éxito.</p>
+
+  <h4>CPU vs. GPU</h4>
+  <p><code>.to(device)</code> mueve tensores a la GPU. Para redes diminutas como esta (64→12→8→4), copiar datos por el bus PCIe puede costar más que el cálculo, así que la CPU puede ser igual o más rápida.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Une cada problema con su solución: (1) datos correlacionados, (2) objetivo móvil, (3) gradientes enormes.</summary><p>(1) Experience Replay, (2) red objetivo <span class="m">\theta^-</span>, (3) gradient clipping.</p></details>
+    <details><summary>Una transición llega a la meta: <span class="m">r=1</span>, <span class="m">d=1</span>, <span class="m">\gamma=0.93</span>. ¿Cuánto vale <span class="m">y_j</span>?</summary><p>1. El término del futuro se anula por <span class="m">(1-d)=0</span>.</p></details>
+    <details><summary>¿Por qué no se pasa el estado 37 como el número 37 a la red?</summary><p>Porque la red trataría al número como una cantidad con orden y distancias que no tienen significado físico; one-hot hace que cada casilla sea una entrada independiente.</p></details>
+  </div>
+</section>
+
+<section id="b4" class="topic">
+  <h3>B4 · De DQN a Actor-Crítico y Soft Actor-Critic (SAC)</h3>
+  <p class="src">Módulo 10, Clase 2 (Pendulum-v1)</p>
+
+  <div class="big"><b>Idea central</b>Los motores reales reciben torques continuos, no "izquierda/derecha". DQN necesita buscar el máximo entre todas las acciones, y con infinitas acciones eso es imposible. Actor-Crítico separa el trabajo: una red (actor) produce directamente la acción continua y otra (crítico) la califica. SAC agrega un premio por mantener variedad en las acciones, lo que da controles más robustos.</div>
+
+  <h4>La evolución en tres pasos</h4>
+  <div class="table-wrap"><table>
+    <tr><th></th><th>Q-learning tabular</th><th>DQN</th><th>SAC</th></tr>
+    <tr><td>Estados</td><td>discretos</td><td>continuos (o muchos)</td><td>continuos</td></tr>
+    <tr><td>Acciones</td><td>discretas</td><td>discretas</td><td>continuas</td></tr>
+    <tr><td>Memoria</td><td>tabla</td><td>una red Q</td><td>red actor + red(es) crítico</td></tr>
+    <tr><td>Límite</td><td>maldición de la dimensionalidad</td><td>no sirve para torques continuos</td><td>más complejo de implementar</td></tr>
+  </table></div>
+
+  <h4>Por qué DQN no sirve para torques continuos</h4>
+  <p>DQN elige <span class="m">a^* = \arg\max_a Q(s,a;\theta)</span>. Con 4 acciones basta comparar 4 números. Si el torque puede ser cualquier valor en [−2, 2] N·m, hay infinitas acciones. Podrías discretizar en, digamos, 200 niveles, pero pierdes precisión, el torque salta bruscamente entre niveles (<em>chattering</em>, que daña actuadores) y la red crece mucho.</p>
+
+  <h4>Actor y crítico</h4>
+  <ul>
+    <li><strong>Actor <span class="m">\pi_\phi</span>:</strong> red que recibe el estado y entrega la acción continua (el torque). Es la política.</li>
+    <li><strong>Crítico <span class="m">Q_\psi</span>:</strong> red que recibe estado <em>y</em> acción (concatenados, <span class="m">[s,a]</span>) y estima qué tan buena fue esa acción, con la ecuación de Bellman como en DQN.</li>
+  </ul>
+  <p>El actor mejora moviendo sus acciones hacia donde el crítico dice que hay más valor; el crítico mejora comparando sus estimaciones con las recompensas reales.</p>
+  <p class="analogy">Analogía: un piloto aprendiz (actor) maneja, y un instructor (crítico) le dice "esa curva estuvo bien" o "frenaste tarde". El instructor también aprende a evaluar mejor con la experiencia.</p>
+
+  <h4>Política y episodio, formalmente</h4>
+  <span class="m mb">\pi(a \mid s) = P(A_t = a \mid S_t = s) \qquad\qquad \tau = (s_0, a_0, r_0, s_1, a_1, r_1, \dots, s_T)</span>
+  <p>La política no es el algoritmo de entrenamiento: es la función que decide. Un episodio <span class="m">\tau</span> es un intento completo. Termina por una condición física (<em>terminated</em>: llegó o falló) o por un límite de tiempo de seguridad (<em>truncated</em>). En Pendulum-v1 el episodio se corta a los 200 pasos.</p>
+  <p>Seguridad: entrenar desde cero en un robot real es inviable porque la exploración al azar provoca colisiones, sobrecorrientes y fatiga mecánica. Se entrena en simulación y luego se transfiere la política.</p>
+
+  <h4>La recompensa de Pendulum-v1</h4>
+  <span class="m mb">r(\theta, \dot\theta, \tau) = -\left(\theta^2 + 0.1\,\dot\theta^2 + 0.001\,\tau^2\right)</span>
+  <ul>
+    <li><span class="m">\theta^2</span>: castiga estar lejos de la vertical hacia arriba (<span class="m">\theta = 0</span>).</li>
+    <li><span class="m">0.1\dot\theta^2</span>: castiga moverse rápido, para que no oscile sin fin.</li>
+    <li><span class="m">0.001\tau^2</span>: castiga usar mucho torque (energía, calentamiento del motor).</li>
+  </ul>
+  <p>Lo mejor posible es 0 (arriba, quieto, sin torque). Lo peor es unos −16.27: <span class="m">\pi^2 + 0.1\cdot 8^2 + 0.001\cdot 2^2 \approx 16.27</span> (colgando hacia abajo, a la velocidad máxima de 8 rad/s y con torque máximo de 2 N·m). Confirmé estos valores en la documentación de Gymnasium. Esta forma cuadrática es la misma idea que la función de costo de un regulador LQR: el ingeniero decide cuánto pesa cada objetivo.</p>
+  <p><strong>Cambiar la consigna:</strong> para mantenerlo en <span class="m">\theta^* = -15^\circ = -\pi/12</span> rad, se castiga el error en vez del ángulo, envuelto en <span class="m">[-\pi, \pi]</span> para que −179° y +179° se reconozcan como casi iguales:</p>
+  <span class="m mb">e_\theta = \big((\theta - \theta^* + \pi) \bmod 2\pi\big) - \pi</span>
+
+  <h4>Máxima entropía: la idea central de SAC</h4>
+  <span class="m mb">J_{\text{std}}(\pi) = \mathbb{E}_\pi\Big[\sum_t \gamma^t r(s_t,a_t)\Big] \qquad J_{\text{SAC}}(\pi) = \mathbb{E}_\pi\Big[\sum_t \gamma^t \big(r(s_t,a_t) + \alpha\,H(\pi(\cdot \mid s_t))\big)\Big]</span>
+  <p>La <strong>entropía</strong> <span class="m">H</span> mide qué tan "repartida" es la política. Una política que siempre hace exactamente lo mismo tiene entropía baja; una que reparte probabilidad entre muchas acciones razonables tiene entropía alta:</p>
+  <span class="m mb">H(\pi(\cdot\mid s)) = -\mathbb{E}_{a\sim\pi}[\log \pi(a\mid s)]</span>
+  <p>SAC premia al agente por hacer bien la tarea <em>y</em> por mantenerse lo más variado posible mientras la hace. El parámetro <span class="m">\alpha</span> (temperatura) controla el balance: <span class="m">\alpha</span> grande = más exploración; <span class="m">\alpha \to 0</span> = vuelve a RL tradicional.</p>
+  <p>¿Por qué ayuda? Una política determinista rígida (como la de DDPG) aprende una sola forma de resolver la tarea; ante un empujón inesperado llega a estados que nunca exploró y no sabe qué hacer. Una política de alta entropía conoce varias formas de resolverla y es más robusta a perturbaciones.</p>
+  <p>En la práctica el actor de SAC no entrega un número sino los parámetros de una campana gaussiana: la media <span class="m">\mu_\phi(s)</span> y el logaritmo de la desviación <span class="m">\log\sigma_\phi(s)</span>. Se sortea una acción de esa campana y se pasa por <span class="m">\tanh</span> para que quede entre −1 y 1, y se multiplica por el torque máximo. El "truco de reparametrización" es escribir ese sorteo como <span class="m">a = \tanh(\mu + \sigma\varepsilon)\cdot a_{\max}</span> con <span class="m">\varepsilon \sim \mathcal N(0,1)</span>, para que el gradiente pueda pasar a través de <span class="m">\mu</span> y <span class="m">\sigma</span>. Al evaluar (ya entrenado) se usa la acción sin ruido: <span class="m">a_{\text{eval}} = \tanh(\mu)\cdot a_{\max}</span>.</p>
+
+  <h4>Redes feedforward (repaso aplicado)</h4>
+  <span class="m mb">\hat y = W_3\,\phi_2\big(W_2\,\phi_1(W_1x + b_1) + b_2\big) + b_3</span>
+  <p>Es la composición de A1 con dos capas ocultas (en el ejemplo, sigmoide y luego tanh) y salida lineal. Tanto el actor como el crítico son redes de este tipo.</p>
+
+  <h4>El péndulo físico, Euler y PRBS</h4>
+  <p>Con fricción <span class="m">b</span> y torque de entrada <span class="m">u</span>, el estado <span class="m">[x_1, x_2] = [\theta, \dot\theta]</span> evoluciona así:</p>
+  <span class="m mb">\dot x_1 = x_2 \qquad \dot x_2 = \frac{mgL\sin x_1 - b\,x_2 + u}{mL^2}</span>
+  <p>Discretizado con Euler explícito y paso <span class="m">h</span>:</p>
+  <span class="m mb">x_1[k+1] = x_1[k] + h\,x_2[k] \qquad x_2[k+1] = x_2[k] + h\,\frac{mgL\sin x_1[k] - b\,x_2[k] + u[k]}{mL^2}</span>
+  <div class="errata"><div class="lab">Errata y aclaración de signos</div>
+    <p>En la diapositiva, la ecuación de <span class="m">x_2[k+1]</span> aparece como <span class="m">x_2[k] + h\cdot\big(h\cdot\frac{gl\cdot bx_1[k] + u[k]}{mL^2}\big)</span>: tiene una <span class="m">h</span> de más, perdió el <span class="m">\sin</span>, la <span class="m">m</span> y el signo de la fricción. La forma correcta es la de arriba: el paso de Euler es simplemente "estado + <span class="m">h</span> × la derivada de la ecuación continua".</p>
+    <p>Sobre el signo de la gravedad: <span class="m">+mgL\sin x_1</span> corresponde a medir <span class="m">\theta</span> desde la vertical <em>hacia arriba</em> (péndulo invertido), que es la convención de Pendulum-v1. El dibujo de la diapositiva mide <span class="m">\theta</span> desde la vertical hacia abajo; con esa convención el término sería <span class="m">-mgL\sin x_1</span>, como en el ejemplo de A5.</p>
+  </div>
+  <p><strong>PRBS</strong> (secuencia binaria pseudoaleatoria) es una señal que salta entre −1 y +1 con duraciones variadas. Sirve para "sacudir" al sistema en muchas frecuencias y amplitudes, de modo que los datos cubran bien todo el espacio de estados. Si solo empujas el péndulo de una forma, la red solo aprende esa forma.</p>
+  <p><strong>Alineación temporal:</strong> para enseñar "con esta entrada y este estado en <span class="m">k</span>, el estado en <span class="m">k+1</span> fue este", se desplaza la columna de salida una posición (<code>shift(periods=-1)</code> en pandas) y se borra la última fila, que queda incompleta (<code>dropna()</code>). Es lo mismo que <code>X = datos[:-1]</code>, <code>Y = datos[1:]</code> en A5.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>¿Qué recibe y qué entrega el actor? ¿Y el crítico?</summary><p>Actor: recibe <span class="m">s</span>, entrega la acción (en SAC, los parámetros <span class="m">\mu</span> y <span class="m">\log\sigma</span> de la campana). Crítico: recibe <span class="m">[s, a]</span>, entrega <span class="m">Q(s,a)</span>.</p></details>
+    <details><summary>En Pendulum-v1, el péndulo está arriba y quieto, pero el agente aplica 2 N·m. ¿Cuánto vale la recompensa?</summary><p><span class="m">-(0 + 0 + 0.001\cdot 4) = -0.004</span>.</p></details>
+    <details><summary>¿Qué pasa con SAC si pones <span class="m">\alpha = 0</span>?</summary><p>Desaparece el premio por entropía y se comporta como RL tradicional: tiende a una política casi determinista, que explora menos y es menos robusta.</p></details>
+  </div>
+</section>
+
+<!-- ================= BLOQUE C ================= -->
+<div class="block-head"><span class="tag">Bloque C</span><h2>ROS 2</h2></div>
+
+<section id="c1" class="topic">
+  <h3>C1 · Qué es ROS 2 y cómo se inspecciona</h3>
+  <p class="src">ROS2_presentacion</p>
+
+  <div class="big"><b>Idea central</b>ROS 2 no es un sistema operativo: es un <em>middleware</em>, una capa de software que corre encima de Linux y permite que muchos programas pequeños (nodos) se comuniquen intercambiando mensajes, en una o varias computadoras.</div>
+
+  <h4>Por qué "no es un sistema operativo"</h4>
+  <p>Linux sigue manejando el hardware, la memoria, los procesos y los drivers. ROS 2 ofrece servicios <em>parecidos</em> a los de un sistema operativo pero solo para robótica: organizar programas, comunicarlos y descubrirse entre ellos. La "O" de ROS es más conceptual que literal.</p>
+  <p class="analogy">Analogía: Linux es el edificio (luz, agua, elevadores). ROS 2 es el sistema de correo interno de la empresa que trabaja ahí: cada departamento (nodo) hace su trabajo y se comunica por correo, sin entrar a la oficina del otro.</p>
+
+  <h4>Por qué ROS 2</h4>
+  <ul>
+    <li><strong>Modular:</strong> cada función (sensor, control, visión, planeación) es un nodo separado. Si uno falla, los demás siguen; puedes reemplazar uno sin tocar el resto.</li>
+    <li><strong>Distribuido:</strong> no hay un servidor central. En ROS 1 existía un nodo maestro (<code>roscore</code>) del que todo dependía; en ROS 2 los nodos se descubren solos a través de DDS (el sistema de comunicación que usa por debajo).</li>
+    <li><strong>Escalable:</strong> puedes agregar nodos o robots sin rediseñar.</li>
+  </ul>
+
+  <h4>Las piezas: nodo, tópico, servicio, acción</h4>
+  <div class="table-wrap"><table>
+    <tr><th>Pieza</th><th>Qué es</th><th>Patrón</th><th>Analogía</th></tr>
+    <tr><td><strong>Nodo</strong></td><td>un programa independiente con una función</td><td>—</td><td>un departamento de la empresa</td></tr>
+    <tr><td><strong>Tópico</strong></td><td>canal con nombre por el que fluyen datos continuamente</td><td>publicador → suscriptores, sin respuesta</td><td>una estación de radio: quien quiera la sintoniza</td></tr>
+    <tr><td><strong>Servicio</strong></td><td>petición puntual que espera respuesta</td><td>pregunta → respuesta</td><td>una llamada telefónica: preguntas y esperas</td></tr>
+    <tr><td><strong>Acción</strong></td><td>tarea larga con meta, avances y resultado final; se puede cancelar</td><td>meta → retroalimentación… → resultado</td><td>pedir comida a domicilio con seguimiento del repartidor</td></tr>
+  </table></div>
+  <p>Ejemplos de tópicos: <code>/camera/image</code>, <code>/cmd_vel</code> (comandos de velocidad), <code>/imu/data</code>. Un nodo que manda datos a un tópico es <strong>publicador</strong>; uno que los recibe es <strong>suscriptor</strong>. Puede haber varios de cada uno en el mismo tópico, y no se conocen entre sí: solo conocen el nombre del tópico y el tipo de mensaje.</p>
+  <div class="errata"><div class="lab">Imagen confusa</div><p>La imagen "Topic/Service/Action" tiene al pie el texto "Node = Block, Service = Action, Action = Signal", que no tiene sentido (parece texto mal generado en la imagen). La diapositiva "Analogy" es la correcta: nodo = bloque de control, tópico = señal continua, servicio = petición rápida, acción = tarea con meta y retroalimentación.</p></div>
+
+  <h4>Versión: ROS 2 Humble</h4>
+  <p>Humble Hawksbill es la versión LTS para Ubuntu 22.04, lanzada en mayo de 2022 y con soporte hasta mayo de 2027. Para Ubuntu 24.04 la equivalente es Jazzy. Se verifica con <code>printenv ROS_DISTRO</code> (en Humble no existe <code>ros2 --version</code>, y es normal). <code>ros2 doctor</code> revisa la instalación y la red; <code>ros2 doctor --report</code> da un informe completo para pedir ayuda.</p>
+
+  <h4>Comandos para inspeccionar un sistema en marcha</h4>
+  <p>Con el demo clásico: en una terminal <code>ros2 run demo_nodes_cpp talker</code> (publica "Hello World: N") y en otra <code>ros2 run demo_nodes_cpp listener</code> (lo recibe).</p>
+  <div class="table-wrap"><table>
+    <tr><th>Comando</th><th>Qué te dice</th></tr>
+    <tr><td><code>ros2 node list</code></td><td>qué nodos están vivos (<code>/talker</code>)</td></tr>
+    <tr><td><code>ros2 node info /talker</code></td><td>qué publica, a qué se suscribe, qué servicios ofrece</td></tr>
+    <tr><td><code>ros2 topic list -t</code></td><td>tópicos activos con su tipo de mensaje (<code>/chatter [std_msgs/msg/String]</code>)</td></tr>
+    <tr><td><code>ros2 topic info /chatter --verbose</code></td><td>cuántos publicadores y suscriptores hay y su QoS</td></tr>
+    <tr><td><code>ros2 topic echo /chatter</code></td><td>imprime los mensajes que pasan</td></tr>
+    <tr><td><code>ros2 param list /talker</code> / <code>ros2 param set ...</code></td><td>ver y cambiar parámetros del nodo</td></tr>
+    <tr><td><code>ros2 run rqt_graph rqt_graph</code></td><td>dibujo de nodos (óvalos) y tópicos (rectángulos)</td></tr>
+  </table></div>
+  <p>Al hacer <code>node info /talker</code> verás muchos servicios que tú no programaste (<code>describe_parameters</code>, <code>get_parameters</code>, <code>set_parameters</code>…) y los tópicos <code>/rosout</code> (registro de mensajes) y <code>/parameter_events</code>: todo nodo los trae de fábrica para manejar sus parámetros y su log.</p>
+  <p><strong>QoS (calidad de servicio):</strong> en <code>topic info --verbose</code> aparecen reglas como <em>Reliability: RELIABLE</em> (reintenta hasta entregar el mensaje; la alternativa <em>BEST_EFFORT</em> no reintenta, útil para sensores rápidos), <em>Durability: VOLATILE</em> (quien se conecta tarde no recibe mensajes viejos) e <em>History depth</em> (cuántos mensajes se guardan en cola). Publicador y suscriptor deben tener QoS compatibles para comunicarse.</p>
+  <p><strong>Parámetros:</strong> configuraciones de un nodo que se pueden cambiar sin recompilar. <code>use_sim_time</code> (falso por defecto) le dice al nodo si usar el reloj de la computadora o el reloj de una simulación (Gazebo publica su propio tiempo). Cuando cambias un parámetro, el cambio se anuncia en <code>/parameter_events</code>, y por eso puedes verlo con <code>ros2 topic echo /parameter_events</code> desde otra terminal.</p>
+  <p><strong><code>ROS_DOMAIN_ID</code>:</strong> número (0 por defecto) que separa "redes" de ROS. Solo se ven los nodos con el mismo ID. Es útil cuando varios compañeros trabajan en la misma red Wi-Fi y no quieren que sus robots se mezclen; y es causa típica de "mis nodos no se ven".</p>
+
+  <h4><code>source /opt/ros/humble/setup.bash</code></h4>
+  <p>No ejecuta nada de robots: configura la terminal actual. Agrega los comandos (<code>ros2</code>, <code>colcon</code>, <code>rviz2</code>) al PATH, define variables como <code>ROS_DISTRO=humble</code> y <code>AMENT_PREFIX_PATH</code>, y permite que <code>ros2 run</code> encuentre los paquetes instalados. Se hace en cada terminal nueva (o se agrega a <code>~/.bashrc</code>).</p>
+  <p>Precisión: la diapositiva dice que el <code>source</code> fija <code>RMW_IMPLEMENTATION=rmw_fastrtps_cpp</code>. En una instalación típica esa variable queda vacía, y ROS 2 Humble usa Fast DDS por defecto cuando no está definida. El efecto práctico es el mismo.</p>
+
+  <h4>Workspace</h4>
+  <p>Un workspace es la carpeta donde viven tus paquetes: <code>mkdir -p ~/ros2_ws/src</code> y luego, desde la raíz, <code>colcon build</code>. Con <code>src</code> vacío, colcon responde "0 packages finished", y es correcto. Se detalla en <a href="#c2">C2</a> y <a href="#c3">C3</a>.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Quieres pedirle al robot "dame la batería actual" una sola vez. ¿Tópico, servicio o acción?</summary><p>Servicio: petición puntual con respuesta. (Si quisieras verla todo el tiempo, sería un tópico.)</p></details>
+    <details><summary>"Navega hasta la gaveta y avísame cómo vas." ¿Qué es?</summary><p>Acción: meta larga, con retroalimentación y resultado, cancelable.</p></details>
+    <details><summary>Tu talker y el listener de tu compañero están en la misma red pero no se ven. ¿Qué revisas primero?</summary><p><code>ROS_DOMAIN_ID</code> en ambas terminales (y que ambas hayan hecho <code>source</code>).</p></details>
+  </div>
+</section>
+
+<section id="c2" class="topic">
+  <h3>C2 · Workspace, paquete y tu primer publicador/suscriptor</h3>
+  <p class="src">Introduction to ROS2, Clase 2</p>
+
+  <div class="big"><b>Idea central</b>Los nodos se escriben dentro de un <strong>paquete</strong>, que vive en el <code>src/</code> de un workspace. Para que ROS encuentre tu nodo, lo registras en <code>setup.py</code>, compilas con <code>colcon build</code> y cargas el entorno con <code>source</code>.</div>
+
+  <h4>Crear el paquete</h4>
+  <pre><code>cd ~/ros2_ws/src
+ros2 pkg create --build-type ament_python hello_world --dependencies rclpy std_msgs</code></pre>
+  <ul>
+    <li><code>--build-type ament_python</code>: el paquete es de Python.</li>
+    <li><code>hello_world</code>: nombre del paquete.</li>
+    <li><code>rclpy</code>: la librería de ROS 2 para Python (crear nodos, publicar, suscribir). <code>std_msgs</code>: tipos de mensaje estándar como <code>String</code> y <code>Float64</code>.</li>
+  </ul>
+  <p>Esto crea <code>hello_world/package.xml</code> (nombre, dependencias), <code>hello_world/setup.py</code> (cómo instalarlo y qué ejecutables tiene) y una subcarpeta <code>hello_world/hello_world/</code> con el mismo nombre, donde van tus archivos <code>.py</code>. Que haya dos carpetas con el mismo nombre una dentro de otra es normal en Python.</p>
+
+  <h4>El publicador, línea por línea</h4>
+  <pre><code>import rclpy
+from rclpy.node import Node
+from std_msgs.msg import String
+
+class HelloWorldPublisher(Node):                 # tu nodo hereda de Node
+    def __init__(self):
+        super().__init__('hello_world_publisher')    # nombre del nodo
+        self.publisher_ = self.create_publisher(String, 'hello_topic', 10)
+        self.timer = self.create_timer(1, self.timer_callback)  # cada 1 s
+
+    def timer_callback(self):
+        msg = String()
+        msg.data = "¡Hola, Mundo de ROS2!"
+        self.publisher_.publish(msg)
+        self.get_logger().info('Publicando: "%s"' % msg.data)
+
+def main(args=None):
+    rclpy.init(args=args)           # arranca la comunicación de ROS
+    nodo = HelloWorldPublisher()
+    rclpy.spin(nodo)                # se queda esperando y ejecutando callbacks
+    nodo.destroy_node()
+    rclpy.shutdown()</code></pre>
+  <ul>
+    <li><code>create_publisher(String, 'hello_topic', 10)</code>: tipo de mensaje, nombre del tópico y tamaño de la cola (cuántos mensajes guarda si el suscriptor va lento; es la "History depth" de C1).</li>
+    <li><code>create_timer(1, callback)</code>: llama a <code>timer_callback</code> cada segundo. No hay un <code>while True</code>; ROS llama a tus funciones cuando toca.</li>
+    <li><strong>Callback:</strong> una función que tú escribes y que ROS llama cuando ocurre un evento (pasó el tiempo, llegó un mensaje).</li>
+    <li><code>rclpy.spin(nodo)</code>: el bucle de eventos. Mantiene vivo el nodo y dispara los callbacks. Sin <code>spin</code>, el programa terminaría de inmediato.</li>
+  </ul>
+  <p>El <strong>suscriptor</strong> es el espejo: <code>create_subscription(String, 'hello_topic', self.listener_callback, 10)</code>, y <code>listener_callback(self, msg)</code> se ejecuta cada vez que llega un mensaje. Para que se comuniquen, el nombre del tópico y el tipo de mensaje deben ser idénticos en ambos.</p>
+
+  <h4>Registrar los ejecutables en <code>setup.py</code></h4>
+  <pre><code>entry_points={
+    'console_scripts': [
+        'hello_publisher = hello_world.publisher:main',
+        'hello_subscriber = hello_world.subscriber:main',
+    ],
+},</code></pre>
+  <p>Se lee: "el ejecutable <code>hello_publisher</code> corre la función <code>main</code> del módulo <code>hello_world/publisher.py</code>". Luego:</p>
+  <pre><code>cd ~/ros2_ws
+colcon build
+source install/setup.bash
+ros2 run hello_world hello_publisher      # terminal 1
+ros2 run hello_world hello_subscriber     # terminal 2 (con su propio source)</code></pre>
+
+  <div class="errata"><div class="lab">Problemas en esta presentación</div>
+    <p><strong>Título:</strong> dice "Services and Actions", pero solo cubre tópicos (publicador/suscriptor). Servicios y acciones no aparecen.</p>
+    <p><strong>Rutas mezcladas:</strong> se crea <code>~/ros2_ws</code>, pero luego se abre <code>~/ros2_ex/src/hello_world/setup.py</code> y se hace <code>source ~/ros2_ex/install/setup.bash</code>. Si sigues las diapositivas al pie de la letra, editarías y cargarías un workspace distinto del que compilaste. Usa una sola ruta en todos los comandos.</p>
+    <p><strong>Comillas:</strong> las líneas de <code>setup.py</code> terminan en <code>’</code> (comilla tipográfica) en lugar de <code>'</code>. Si las copias, obtienes exactamente el <code>SyntaxError: unterminated string literal</code> que muestra la presentación de depuración (<a href="#c3">C3</a>).</p>
+    <p><strong><code>chmod +x</code>:</strong> no hace daño, pero en paquetes <code>ament_python</code> no es necesario: <code>colcon</code> genera los ejecutables a partir de <code>entry_points</code>.</p>
+  </div>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>¿Qué pasa si el publicador usa <code>'hello_topic'</code> y el suscriptor <code>'hello_topic2'</code>?</summary><p>Nada llega: son canales distintos. Ambos corren sin error, pero el suscriptor nunca imprime.</p></details>
+    <details><summary>¿Para qué sirve <code>rclpy.spin()</code>?</summary><p>Mantiene vivo el nodo y ejecuta los callbacks (timers, mensajes que llegan). Sin él el programa termina.</p></details>
+    <details><summary>Si escribes <code>'pub = hello_world.publisher:iniciar'</code>, ¿qué debe existir en <code>publisher.py</code>?</summary><p>Una función <code>def iniciar():</code>. El nombre después de los dos puntos es la función que se llama.</p></details>
+  </div>
+</section>
+
+<section id="c3" class="topic">
+  <h3>C3 · Depuración en ROS 2: diagnosticar antes de cambiar código</h3>
+  <p class="src">Tips_ROS2_Depuracion</p>
+
+  <div class="big"><b>Idea central</b>Casi todos los errores caen en uno de tres niveles: <strong>entorno</strong> (la terminal no conoce ROS o tu paquete), <strong>compilación</strong> (el paquete no se construyó) o <strong>ejecución</strong> (el nodo no existe o falla al arrancar). Primero identifica el nivel, después corrige.</div>
+
+  <h4>Las carpetas del workspace</h4>
+  <div class="table-wrap"><table>
+    <tr><th>Carpeta</th><th>Qué contiene</th><th>¿La editas?</th></tr>
+    <tr><td><code>src/</code></td><td>tu código fuente</td><td>sí, aquí trabajas</td></tr>
+    <tr><td><code>build/</code></td><td>archivos temporales que genera colcon</td><td>no</td></tr>
+    <tr><td><code>install/</code></td><td>los paquetes instalados; ROS ejecuta desde aquí</td><td>no</td></tr>
+    <tr><td><code>log/</code></td><td>registros de compilación</td><td>no; los lees para diagnosticar</td></tr>
+  </table></div>
+
+  <h4><code>source</code> vs. <code>bash</code></h4>
+  <p><code>source archivo.sh</code> ejecuta el script <em>en tu terminal actual</em>, así que los cambios de variables se quedan. <code>bash archivo.sh</code> lo ejecuta en otra shell que desaparece al terminar, y se lleva sus cambios. Por eso siempre es <code>source</code>, y en cada terminal nueva. Primero el de ROS (<code>/opt/ros/humble/setup.bash</code>) y luego el de tu workspace (<code>~/ros2_ws/install/setup.bash</code>).</p>
+
+  <h4>Flujo recomendado</h4>
+  <pre><code>cd ~/ros2_ws                          # compilar SIEMPRE desde la raíz
+source /opt/ros/humble/setup.bash
+colcon build --symlink-install
+source install/setup.bash
+ros2 run mi_paquete mi_nodo</code></pre>
+  <p><code>--symlink-install</code> crea enlaces a tus archivos en vez de copiarlos, así que si editas un <code>.py</code> no necesitas recompilar. Si cambias <code>setup.py</code> o agregas archivos nuevos, sí hay que recompilar y volver a hacer <code>source</code>.</p>
+
+  <h4>Errores típicos</h4>
+  <ul>
+    <li><strong>Lee el primer error real, no el último.</strong> Las últimas líneas suelen ser consecuencias. Busca <code>SyntaxError</code>, <code>CMake Error</code> o <code>ModuleNotFoundError</code>, con su archivo y línea.</li>
+    <li><strong>Comillas de Word o PowerPoint:</strong> <code>’</code> no es <code>'</code>. Copiar código de diapositivas es la causa más común del <code>SyntaxError: unterminated string literal</code>.</li>
+    <li><strong>Indentación:</strong> en Python la sangría es parte de la sintaxis. 4 espacios por nivel, sin mezclar tabuladores (<code>IndentationError</code>, <code>TabError</code>).</li>
+    <li><strong>Paquetes duplicados:</strong> si copias una carpeta de paquete (<code>turtle_control_copy/</code>) y ambas declaran <code>&lt;name&gt;turtle_control&lt;/name&gt;</code> en <code>package.xml</code>, colcon se confunde. Revisa con <code>find ~/ros2_ws/src -name package.xml</code> y <code>colcon list</code>.</li>
+    <li><strong>Compila pero no aparece el ejecutable:</strong> <code>ros2 pkg executables mi_paquete</code>. Si no sale, el problema está en <code>entry_points</code> de <code>setup.py</code>: el nombre del módulo, del archivo y de la función deben coincidir exactamente.</li>
+  </ul>
+  <p><strong>Compilación limpia</strong> (<code>rm -rf build install log</code> y recompilar): úsala si cambiaste nombres o estructura de paquetes o hay residuos de una configuración anterior. No arregla un error de sintaxis; borrar carpetas no corrige el código.</p>
+
+  <h4>La escalera de diagnóstico (sube un escalón a la vez)</h4>
+  <ol>
+    <li>¿ROS funciona? → <code>ros2 --help</code></li>
+    <li>¿Existe mi paquete? → <code>ros2 pkg list | grep mi_paquete</code></li>
+    <li>¿Compila? → <code>colcon build --packages-select mi_paquete</code></li>
+    <li>¿Existe el ejecutable? → <code>ros2 pkg executables mi_paquete</code></li>
+    <li>¿Está registrado? → revisar <code>console_scripts</code> en <code>setup.py</code></li>
+    <li>¿Arranca? → revisar <code>main()</code> y el código del nodo</li>
+  </ol>
+  <p>La frase que resume la presentación: depurar no es probar cosas al azar, es reducir sistemáticamente dónde puede estar el problema.</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary><code>Package 'hello_world' not found</code>. ¿Nivel y primer paso?</summary><p>Entorno o paquete. Hacer <code>source /opt/ros/humble/setup.bash</code> y <code>source ~/ros2_ws/install/setup.bash</code>, y verificar con <code>ros2 pkg list | grep hello_world</code>.</p></details>
+    <details><summary><code>colcon build</code> termina bien pero <code>ros2 run</code> no encuentra el nodo. ¿Qué comando usas?</summary><p><code>ros2 pkg executables nombre_paquete</code>; si no aparece, revisar <code>entry_points</code>, recompilar y hacer <code>source</code>.</p></details>
+    <details><summary>Abriste una terminal nueva y nada de ROS funciona, aunque ayer sí. ¿Por qué?</summary><p>Cada terminal nueva necesita su <code>source</code>; la configuración no se hereda de terminales anteriores (salvo que la pongas en <code>~/.bashrc</code>).</p></details>
+  </div>
+</section>
+
+<section id="c4" class="topic">
+  <h3>C4 · Un lazo de control distribuido con nodos</h3>
+  <p class="src">Class 3: Control System</p>
+
+  <div class="big"><b>Idea central</b>Se arma un sistema de control en lazo cerrado clásico (referencia → controlador → planta → sensor → de vuelta al controlador), pero cada bloque es un nodo de ROS 2 y cada flecha es un tópico.</div>
+
+  <h4>Repaso del lazo cerrado</h4>
+  <ul>
+    <li><span class="m">r(t)</span> <strong>referencia</strong>: el valor deseado (setpoint).</li>
+    <li><span class="m">y(t)</span> <strong>salida medida</strong>: lo que el sensor reporta.</li>
+    <li><span class="m">e(t) = r(t) - y(t)</span> <strong>error</strong>: cuánto falta.</li>
+    <li><span class="m">u(t)</span> <strong>señal de control</strong>: el comando al actuador.</li>
+    <li><span class="m">x(t)</span> <strong>estado</strong> de la planta.</li>
+  </ul>
+  <p class="analogy">Analogía: ajustar la regadera. Quieres agua tibia (referencia), la sientes con la mano (sensor), comparas (error) y giras la llave (control). Mientras más lejos estás de lo que quieres, más giras: eso es un controlador proporcional.</p>
+
+  <h4>Los nodos y sus tópicos</h4>
+  <figure>
+    <svg viewBox="0 0 620 250" role="img" aria-label="Grafo de nodos: manager publica /reference; controller lee /reference y /measured_y y publica /control_u; plant lee /control_u y publica /plant_state; sensor lee /plant_state y publica /measured_y; live_plot lee los tres">
+      <rect class="bx" x="10" y="20" width="110" height="40" rx="20"/><text x="30" y="45">manager</text>
+      <rect class="ac" x="200" y="20" width="120" height="40" rx="20"/><text x="218" y="45">controller</text>
+      <rect class="bx" x="440" y="20" width="110" height="40" rx="20"/><text x="477" y="45">plant</text>
+      <rect class="bx" x="440" y="150" width="110" height="40" rx="20"/><text x="470" y="175">sensor</text>
+      <rect class="bx" x="200" y="190" width="120" height="40" rx="20"/><text x="222" y="215">live_plot</text>
+      <path class="arrow" d="M120,40 L198,40"/><text x="122" y="32" class="mono">/reference</text>
+      <path class="arrowa" d="M320,40 L438,40"/><text x="338" y="32" class="mono">/control_u</text>
+      <path class="arrow" d="M495,60 L495,148"/><text x="502" y="108" class="mono">/plant_state</text>
+      <path class="arrow" d="M440,170 C380,170 300,120 262,62"/><text x="350" y="125" class="mono">/measured_y</text>
+      <path class="arrow" d="M65,60 C65,200 120,210 198,210" style="stroke-dasharray:4 4"/>
+      <path class="arrow" d="M440,175 C400,190 360,205 322,207" style="stroke-dasharray:4 4"/>
+      <path class="arrow" d="M380,40 C380,120 300,150 275,188" style="stroke-dasharray:4 4"/>
+      <text x="62" y="245" class="sm">punteado: live_plot escucha /reference, /measured_y y /control_u</text>
+    </svg>
+    <figcaption>Óvalos = nodos, flechas = tópicos. La flecha de sensor a controller cierra el lazo.</figcaption>
+  </figure>
+  <div class="table-wrap"><table>
+    <tr><th>Nodo</th><th>Escucha</th><th>Publica</th><th>Qué hace</th></tr>
+    <tr><td><code>manager_node</code></td><td>—</td><td><code>/reference</code></td><td>cada 2 s cambia la referencia en escalones: 0, 1, 2, −1, 0.5, y repite</td></tr>
+    <tr><td><code>controller_node</code></td><td><code>/reference</code>, <code>/measured_y</code></td><td><code>/control_u</code></td><td>cada 0.05 s calcula <span class="m">e = r - y</span> y <span class="m">u = K_p e</span> con <span class="m">K_p = 2</span></td></tr>
+    <tr><td><code>plant_node</code></td><td><code>/control_u</code></td><td><code>/plant_state</code></td><td>simula <span class="m">\dot x = -ax + bu</span> con Euler, <span class="m">a=b=1</span>, <span class="m">t_s = 0.05</span> s</td></tr>
+    <tr><td><code>sensor_node</code></td><td><code>/plant_state</code></td><td><code>/measured_y</code></td><td>reenvía el estado como medición (<span class="m">y = x</span>; aquí sin ruido)</td></tr>
+    <tr><td><code>live_plot_node</code></td><td>los tres de arriba</td><td>—</td><td>grafica <span class="m">r</span>, <span class="m">y</span>, <span class="m">u</span> en vivo con matplotlib</td></tr>
+  </table></div>
+  <p>Los mensajes son <code>std_msgs/Float64</code> (un solo número). Fíjate en el patrón de diseño que se repite en todos los nodos: los callbacks de suscripción solo <em>guardan</em> el último valor recibido (<code>self.r = msg.data</code>), y un timer hace el cálculo a ritmo fijo. Así el controlador corre a 20 Hz aunque los mensajes lleguen a destiempo.</p>
+
+  <h4>La planta y su discretización</h4>
+  <span class="m mb">\dot x = -a\,x + b\,u \;\;\Rightarrow\;\; x_{k+1} = x_k + t_s\,(-a\,x_k + b\,u_k)</span>
+  <p>Es un sistema de primer orden: como un motor con inercia o un tanque que se llena y se vacía. Sin control (<span class="m">u=0</span>), <span class="m">x</span> decae a 0. El código del <code>plant_node</code> hace exactamente ese paso de Euler en <code>update_plant</code>.</p>
+
+  <h4>Qué esperar al cambiar <span class="m">K_p</span> (para tu entregable)</h4>
+  <p>Este análisis no viene en las diapositivas, pero te sirve para interpretar tus gráficas. Sustituyendo <span class="m">u = K_p(r - x)</span> en la planta:</p>
+  <span class="m mb">\dot x = -(a + bK_p)\,x + bK_p\,r \;\;\Rightarrow\;\; x_{ss} = \frac{bK_p}{a + bK_p}\,r = \frac{K_p}{1 + K_p}\,r \quad (a=b=1)</span>
+  <div class="table-wrap"><table>
+    <tr><th><span class="m">K_p</span></th><th>Salida final / referencia</th><th>Error en estado estacionario</th><th>Constante de tiempo <span class="m">1/(1+K_p)</span></th></tr>
+    <tr><td class="num">1</td><td class="num">50 %</td><td class="num">50 %</td><td class="num">0.50 s</td></tr>
+    <tr><td class="num">2</td><td class="num">66.7 %</td><td class="num">33.3 %</td><td class="num">0.33 s</td></tr>
+    <tr><td class="num">5</td><td class="num">83.3 %</td><td class="num">16.7 %</td><td class="num">0.17 s</td></tr>
+    <tr><td class="num">10</td><td class="num">90.9 %</td><td class="num">9.1 %</td><td class="num">0.09 s</td></tr>
+  </table></div>
+  <ul>
+    <li><strong>Error en estado estacionario:</strong> con un control solo proporcional y esta planta, <em>siempre</em> queda error: con <span class="m">K_p = 2</span> y referencia 1, la salida se queda en 0.67. Para eliminarlo se agrega acción integral (control PI), que la diapositiva menciona como opción.</li>
+    <li><strong>Velocidad:</strong> más <span class="m">K_p</span> = respuesta más rápida. Con <span class="m">K_p=2</span> se asienta en unos 4 constantes de tiempo ≈ 1.3 s, antes de que el manager cambie la referencia (cada 2 s).</li>
+    <li><strong>Sobreimpulso:</strong> en teoría, un sistema de primer orden con control P no tiene sobreimpulso. Si en tus gráficas aparece, viene de los <strong>retardos</strong>: los nodos corren con timers independientes y cada mensaje tarda en pasar de un nodo al siguiente. En una simulación rápida que hice con un solo paso de retardo (0.05 s), <span class="m">K_p = 10</span> ya sobrepasa su valor final en cerca de 29 %, mientras que <span class="m">K_p = 2</span> no muestra sobreimpulso.</li>
+    <li><strong>Límite de estabilidad:</strong> en el modelo discreto ideal sin retardos, el polo es <span class="m">1 - t_s(1+K_p)</span>. La respuesta empieza a oscilar si <span class="m">K_p &gt; 19</span> y se vuelve inestable si <span class="m">K_p &gt; 39</span>. Con los retardos reales, estos límites son más bajos.</li>
+  </ul>
+
+  <div class="errata"><div class="lab">Detalles que te pueden confundir</div>
+    <p><strong>Dos nodos publican en <code>/reference</code>:</strong> <code>reference_node</code> publica 1.0 cada 0.1 s y <code>manager_node</code> publica escalones cada 2 s. Si corres ambos, la referencia brincará entre sus valores. El paso 8 solo corre el manager (no el reference_node), y es lo correcto: corre uno u otro.</p>
+    <p><strong>El diagrama dice <span class="m">u = K(r - x)</span></strong> pero el código usa <span class="m">y</span>, la medición. Aquí da igual porque el sensor reenvía <span class="m">x</span> sin cambios; en un robot real el controlador solo conoce <span class="m">y</span>, que puede tener ruido o retardo.</p>
+    <p>En el paso 8 hay un tipeo: <code>rros2 run</code> debe ser <code>ros2 run</code>.</p>
+  </div>
+
+  <h4>El entregable, traducido</h4>
+  <p>Correr el sistema, verlo en la gráfica en vivo, probar al menos dos valores de <span class="m">K_p</span> (cambiando <code>self.kp</code> en <code>controller_node.py</code>, recompilando si no usaste <code>--symlink-install</code>) y comparar sobreimpulso, velocidad y error en estado estacionario. Además, documentar los tópicos y cómo interactúan los nodos (la tabla de arriba y el <code>rqt_graph</code> te sirven para eso).</p>
+
+  <div class="quiz"><div class="lab">Ponte a prueba</div>
+    <details><summary>Con <span class="m">K_p = 4</span> y referencia 2, ¿dónde se estabiliza la salida (modelo ideal)?</summary><p><span class="m">\frac{4}{5}\cdot 2 = 1.6</span>. Error de 0.4.</p></details>
+    <details><summary>¿Por qué el controlador guarda <span class="m">r</span> y <span class="m">y</span> en callbacks y calcula en un timer, en vez de calcular dentro del callback?</summary><p>Para que el control corra a una frecuencia fija y conocida, independiente de cuándo lleguen los mensajes.</p></details>
+    <details><summary>Si subes <span class="m">K_p</span> a 100, ¿qué esperas?</summary><p>Inestabilidad: en el modelo discreto el polo sería <span class="m">1 - 0.05\cdot 101 = -4.05</span>, fuera del círculo unitario; la señal oscila y crece.</p></details>
+  </div>
+</section>
+
+<section class="topic" style="margin-top:64px;border-top:1px solid var(--line);padding-top:16px">
+  <h3 style="font-size:1.1rem">Fuentes externas consultadas</h3>
+  <p>Todo lo demás sale de tus presentaciones. Para confirmar datos que no venían completos consulté:</p>
+  <ul>
+    <li><a href="https://gymnasium.farama.org/environments/classic_control/pendulum/" target="_blank" rel="noopener">Gymnasium: Pendulum-v1</a> (recompensa, rango de torque, θ = 0 arriba, 200 pasos, peor recompensa ≈ −16.27)</li>
+    <li><a href="https://endoflife.date/ros-2" target="_blank" rel="noopener">endoflife.date: ROS 2</a> (fechas de soporte de Humble y Jazzy)</li>
+  </ul>
+</section>
+</main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script>
+(function(){
+  var els=document.querySelectorAll('.m');
+  if(!window.katex){return;}
+  els.forEach(function(el){
+    var tex=el.textContent;
+    try{ katex.render(tex, el, {output:'mathml', displayMode: el.classList.contains('mb'), throwOnError:false}); }
+    catch(e){ el.textContent=tex; }
+  });
+})();
+</script>
+
+</body>
+</html>
